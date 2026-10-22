@@ -1,0 +1,13 @@
+{
+    "model": "ResNet-152 (Baseline Unbalanced)",
+    "resolution": "256x256",
+    "best_epoch": 20,
+    "test_overall_accuracy": 0.7248331049117999,
+    "test_balanced_accuracy": 0.643445615307642,
+    "test_macro_f1": 0.6527419692942351,
+    "test_weighted_f1": 0.7217572416925802,
+    "bottom_15_minority_mean_recall": 0.5243566456320603,
+    "bottom_15_minority_mean_f1": 0.5733941614502969,
+    "top_15_majority_mean_recall": 0.8080022515336364,
+    "top_15_majority_mean_f1": 0.7959509418269407
+}
