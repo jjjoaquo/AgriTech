@@ -6,9 +6,9 @@
   <meta name="theme-color" content="#123e32">
   <title>AgriTech · Inspección de plagas</title>
   <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
-  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css', v='20261026-portal') }}">
 </head>
-<body>
+<body class="portal-page">
   <a class="skip-link" href="#modulos">Saltar a los módulos</a>
   <header class="topbar">
     <a class="brand" href="/" aria-label="AgriTech, inicio"><span class="brand-icon" aria-hidden="true">✳</span><span><strong>AgriTech</strong><small>INSPECCIÓN FITOSANITARIA</small></span></a>
@@ -20,36 +20,43 @@
     <a href="/esparrago"><span aria-hidden="true">03</span> Inspección con YOLO</a>
   </nav>
   <main id="inicio">
-    <section class="intro" aria-labelledby="portal-title">
-      <div>
-        <p class="eyebrow">PLAGAS EN CULTIVOS · INSPECCIÓN ASISTIDA</p>
-        <h1 id="portal-title">Una mirada más precisa <br>para cuidar tus cultivos.</h1>
-        <p>Elige la herramienta según la fotografía. ResNet sugiere una clase para la imagen completa; YOLO localiza objetos en espárrago. Tú verificas cada resultado.</p>
+    <section class="portal-hero" aria-labelledby="portal-title">
+      <div class="portal-hero-copy">
+        <p class="eyebrow">AGRITECH / INSPECCIÓN FITOSANITARIA</p>
+        <h1 id="portal-title">Observa el cultivo.<br><em>Decide con evidencia.</em></h1>
+        <p>Dos herramientas para revisar fotografías de plagas. Empieza con una imagen, examina el resultado y confirma el hallazgo en campo.</p>
+        <a class="portal-hero-link" href="#modulos">Elegir herramienta <span aria-hidden="true">↘</span></a>
       </div>
-      <ol class="steps" aria-label="Flujo de inspección">
-        <li><span class="step-number">1</span><div><strong>Elige</strong><small>Foto o cámara</small></div></li>
-        <li><span class="step-number">2</span><div><strong>Analiza</strong><small>Clasifica o detecta</small></div></li>
-        <li><span class="step-number">3</span><div><strong>Verifica</strong><small>Revisa en campo</small></div></li>
-      </ol>
+      <div class="portal-hero-visual" aria-hidden="true">
+        <span class="hero-visual-tag">FLUJO DE INSPECCIÓN</span>
+        <span class="hero-visual-frame"><span class="hero-visual-focus"></span></span>
+        <span class="hero-visual-caption">FOTO <span>→</span> ANÁLISIS <span>→</span> REVISIÓN</span>
+      </div>
     </section>
+    <div class="portal-section-heading"><div><p class="eyebrow">01 / HERRAMIENTAS</p><h2>¿Qué necesitas analizar?</h2></div><p>Selecciona el módulo según la imagen que tengas.</p></div>
     <section id="modulos" class="portal-grid" aria-label="Módulos disponibles">
-      <article class="card module-card">
-        <span class="eyebrow">01 / VARIOS CULTIVOS</span>
+      <article class="module-card module-general">
+        <div class="module-icon" aria-hidden="true">◉</div>
+        <span class="eyebrow">VARIOS CULTIVOS · CLASIFICACIÓN</span>
         <h2>Clasificación general de plagas</h2>
-        <p>Sube una foto cercana de la plaga. ResNet‑152 muestra las tres clases más probables entre 102 categorías. Esta prueba clasifica la foto completa y no dibuja recuadros.</p>
-        <div class="module-meta"><span>Fotografía</span><span>102 clases</span><span>Experimental</span></div>
-        <a class="primary" href="/general">Abrir clasificación general <span aria-hidden="true">→</span></a>
+        <p>Sube una foto cercana de la plaga. ResNet‑152 muestra tres posibles clases entre 102 categorías para la imagen completa.</p>
+        <div class="module-illustration general-illustration" aria-hidden="true"><span>FOTOGRAFÍA</span><div class="illustration-picture">✳</div><div class="illustration-lines"><i></i><i></i><i></i></div></div>
+        <div class="module-meta"><span>Foto</span><span>102 clases</span><span>Sin recuadros</span></div>
+        <a class="module-action" href="/general">Abrir clasificación general <span aria-hidden="true">↗</span></a>
         {% if not classifier_available %}<p class="small muted">El peso ResNet aún no está instalado en este servidor.</p>{% endif %}
       </article>
-      <article class="card module-card">
-        <span class="eyebrow">02 / ESPÁRRAGO</span>
+      <article class="module-card module-yolo">
+        <div class="module-icon" aria-hidden="true">⌗</div>
+        <span class="eyebrow">ESPÁRRAGO · DETECCIÓN LOCALIZADA</span>
         <h2>Inspección localizada con YOLO</h2>
         <p>Analiza una foto o la cámara, ve cajas y datos sobre la imagen, corrige resultados, registra hallazgos y consulta SIGIA–SENASA para espárrago.</p>
+        <div class="module-illustration yolo-illustration" aria-hidden="true"><span>VISTA DE DETECCIÓN</span><div class="illustration-picture">✳<i></i></div><div class="illustration-lines"><i></i><i></i></div></div>
         <div class="module-meta"><span>Foto o cámara</span><span>7 clases</span><span>Recuadros</span></div>
-        <a class="secondary" href="/esparrago">Abrir inspección de espárrago <span aria-hidden="true">→</span></a>
+        <a class="module-action" href="/esparrago">Abrir inspección con YOLO <span aria-hidden="true">↗</span></a>
       </article>
     </section>
-    <p class="portal-note"><strong>Alcance actual.</strong> El módulo general usa 224 px como valor operativo basado en la receta oficial de ResNet‑152; el notebook recibido no registra el tamaño usado por Alonso. YOLO sigue siendo el módulo para detección localizada. SENASA es una fuente de consulta, no una validación automática del modelo.</p>
+    <div class="portal-process" aria-label="Pasos de inspección"><div><span>01</span><strong>Captura</strong><small>Sube una foto o usa la cámara en YOLO.</small></div><div><span>02</span><strong>Revisa</strong><small>Lee la clase sugerida o los recuadros.</small></div><div><span>03</span><strong>Confirma</strong><small>Verifica el resultado en campo.</small></div></div>
+    <p class="portal-note"><strong>Alcance actual.</strong> El módulo general usa 224 px como valor operativo basado en la receta oficial de ResNet‑152; el notebook recibido no registra el tamaño usado por Alonso. YOLO realiza la detección localizada en espárrago. SENASA es una fuente de consulta, no una validación automática del modelo.</p>
   </main>
   <footer><strong>AgriTech</strong><span>Prototipo académico · La revisión humana decide.</span><a href="#modulos">Volver a los módulos ↑</a></footer>
 </body>
