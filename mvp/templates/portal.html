@@ -56,7 +56,7 @@
       </article>
     </section>
     <div class="portal-process" aria-label="Pasos de inspección"><div><span>01</span><strong>Captura</strong><small>Sube una foto o usa la cámara en YOLO.</small></div><div><span>02</span><strong>Revisa</strong><small>Lee la clase sugerida o los recuadros.</small></div><div><span>03</span><strong>Confirma</strong><small>Verifica el resultado en campo.</small></div></div>
-    <p class="portal-note"><strong>Alcance actual.</strong> El módulo general usa 224 px como valor operativo basado en la receta oficial de ResNet‑152; el notebook recibido no registra el tamaño usado por Alonso. YOLO realiza la detección localizada en espárrago. SENASA es una fuente de consulta, no una validación automática del modelo.</p>
+    <p class="portal-note"><strong>Alcance actual.</strong> El clasificador general usa el peso no balanceado entregado por Alonso y entrada de 256 × 256 px, según su confirmación. El nuevo ZIP contiene datos balanceados con StyleGAN2, pero aún no un peso reentrenado. YOLO realiza la detección localizada en espárrago. SENASA es una fuente de consulta, no una validación automática del modelo.</p>
   </main>
   <footer><strong>AgriTech</strong><span>Prototipo académico · La revisión humana decide.</span><a href="#modulos">Volver a los módulos ↑</a></footer>
 </body>

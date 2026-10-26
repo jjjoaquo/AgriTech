@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parent
 CLASSES_PATH = ROOT / "models" / "classes_ip102.txt"
 DEFAULT_WEIGHTS = ROOT / "models" / "best_resnet152_baseline.safetensors"
 WEIGHTS_PATH = Path(os.environ.get("AGRI_RESNET_WEIGHTS", str(DEFAULT_WEIGHTS)))
-IMAGE_SIZE = int(os.environ.get("AGRI_RESNET_IMAGE_SIZE", "224"))
+IMAGE_SIZE = int(os.environ.get("AGRI_RESNET_IMAGE_SIZE", "256"))
 MODEL_NAME = "ResNet-152 · 102 clases (peso de Alonso)"
 
 _model = None
@@ -58,7 +58,7 @@ def get_model():
 
 
 def classify_image(image: Image.Image, top_k: int = 3) -> dict:
-    """Clasifica la imagen completa; el tamaño 224 es provisional hasta recibir IMG_SIZE."""
+    """Clasifica la imagen completa con el tamaño 256 informado por el entrenador."""
     import torch
     from torchvision import transforms
 
@@ -84,5 +84,5 @@ def classify_image(image: Image.Image, top_k: int = 3) -> dict:
         "model": MODEL_NAME,
         "class_count": len(labels),
         "image_size": IMAGE_SIZE,
-        "notice": "Clasificación de la imagen completa; no localiza plagas ni dibuja recuadros. Se usan 224 px por convención de TorchVision, sin registro del tamaño original de Alonso.",
+        "notice": "Clasificación de la imagen completa; no localiza plagas ni dibuja recuadros. Entrada de 256 × 256 px, según Alonso.",
     }
