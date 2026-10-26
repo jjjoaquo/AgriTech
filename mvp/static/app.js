@@ -7,11 +7,39 @@ const overlay = $('overlay');
 const overlayCtx = overlay.getContext('2d');
 for(const name of window.PEST_CLASSES)$('boxClass').add(new Option(name,name));
 
-function message(text, error=false){ $('message').textContent=text; $('message').classList.toggle('error',error); }
+function message(text, error=false){
+  // Avoid announcing the same camera status on every frame.
+  if($('message').textContent!==text)$('message').textContent=text;
+  $('message').classList.toggle('error',error);
+}
+function recordMessage(text, error=false){
+  $('saveMessage').textContent=text;
+  $('saveMessage').classList.toggle('error',error);
+}
+function photoBusy(busy){
+  $('viewport').setAttribute('aria-busy',String(busy));
+  $('analysisProgress').hidden=!busy;
+  if(busy)$('livePill').textContent='Analizando…';
+}
+function clearResultView(text='Esperando una imagen'){
+  $('totalCount').textContent='—';$('resultSummary').textContent=text;
+  $('senasaClass').disabled=true;$('senasaBtn').disabled=true;
+  $('resultModel').textContent='—';$('fps').textContent='— FPS';
+  $('detections').replaceChildren();
+  const empty=document.createElement('p');empty.className='muted';empty.textContent=text;
+  $('detections').append(empty);
+  $('resultDot').classList.remove('active');
+  $('saveBtn').disabled=true;$('saveHelp').textContent='Primero analiza una foto o un fotograma.';
+  $('saveMessage').textContent='';
+  $('alertTitle').textContent='Sin alerta activa';
+  $('alertText').textContent='Revisa el resultado cuando termine el análisis.';
+  $('alertTitle').closest('.alert-card').classList.remove('active');
+}
+
 function confidence(){ return Number($('confidence').value)/100; }
 function setupCanvas(){ overlay.width=$('viewport').clientWidth; overlay.height=$('viewport').clientHeight; drawOverlay(); }
 window.addEventListener('resize', setupCanvas);
-$('confidence').addEventListener('input',()=>{$('confidenceValue').textContent=$('confidence').value+' %';});
+$('confidence').addEventListener('input',()=>{$('confidenceValue').textContent=$('confidence').value+' %';$('confidence').setAttribute('aria-valuetext',$('confidence').value+' por ciento');});
 
 function iou(a,b){
   const x1=Math.max(a[0],b[0]),y1=Math.max(a[1],b[1]),x2=Math.min(a[2],b[2]),y2=Math.min(a[3],b[3]);
@@ -70,7 +98,22 @@ function refreshReview(){
   if(state.selected>=0&&state.latest?.detections[state.selected])$('boxClass').value=state.latest.detections[state.selected].class_name;
   $('reviewHint').textContent=editable?(state.addBox?'Arrastra sobre la imagen para dibujar la caja nueva.':state.selected>=0?'Caja seleccionada: arrástrala para moverla o arrastra una esquina para redimensionarla.':'Selecciona un recuadro para editarlo.'):'Primero analiza una foto o congela un fotograma.';
   overlay.classList.toggle('editable',editable);
+  $('boxSelection').disabled=!editable;
+  const choices=editable?state.latest.detections:[];
+  // Keep the focused native select stable during camera updates and pointer edits.
+  const key=String(editable)+JSON.stringify(choices.map(d=>d.class_name));
+  if($('boxSelection').dataset.options!==key){
+    $('boxSelection').replaceChildren(new Option(editable?'Selecciona un recuadro':'Primero analiza una imagen','-1'));
+    choices.forEach((d,i)=>$('boxSelection').add(new Option('Recuadro '+(i+1)+' · '+d.class_name,String(i))));
+    $('boxSelection').dataset.options=key;
+  }
+  $('boxSelection').value=String(state.selected);
+  $('addBoxBtn').setAttribute('aria-pressed',String(state.addBox));
 }
+$('boxSelection').addEventListener('change',()=>{
+  state.selected=Number($('boxSelection').value);state.addBox=false;
+  $('addBoxBtn').classList.remove('active');refreshReview();drawOverlay();
+});
 function mediaGeometry(){
   const media=$('photo'),outer=$('viewport').getBoundingClientRect(),rect=media.getBoundingClientRect();
   return {left:rect.left-outer.left,top:rect.top-outer.top,width:rect.width,height:rect.height};
@@ -137,6 +180,8 @@ function updateUI(result){
   result.counts={};for(const detection of result.detections)result.counts[detection.class_name]=(result.counts[detection.class_name]||0)+1;
   const active=updateTracks(result.detections);
   $('totalCount').textContent=result.detections.length;
+  $('resultSummary').textContent=state.mode==='camera'?'En el fotograma actual':'En la imagen analizada';
+  $('saveHelp').textContent='Añade el lote y el estado de revisión para guardar.';
   $('latency').textContent=result.inference_ms+' ms';
   $('frameState').textContent=result.detections.length?'Detección activa':'Sin plagas detectadas';
   $('resultDot').classList.toggle('active',result.detections.length>0);
@@ -149,13 +194,23 @@ function updateUI(result){
     $('senasaResult').textContent='Selecciona una plaga detectada para consultar SIGIA.';
   }
   $('detections').replaceChildren();
-  if(!counts.length){const p=document.createElement('p');p.className='muted';p.textContent='Sin detecciones sobre el umbral actual.';$('detections').append(p);}
+  if(!counts.length){const p=document.createElement('p');p.className='muted';p.textContent='No se encontraron objetos sobre el umbral actual. Esto no descarta la presencia de plagas; verifica la imagen en campo.';$('detections').append(p);}
   for(const [name,count] of counts){
     const row=document.createElement('div');row.className='detection-row';
     const label=document.createElement('span');label.textContent=name;
+    const detail=document.createElement('small');detail.className='detection-detail';
+    const detections=result.detections.filter(d=>d.class_name===name);
+    const scores=detections.filter(d=>!d.manual).map(d=>Math.round(d.confidence*100));
+    if(scores.length){
+      const low=Math.min(...scores),high=Math.max(...scores);
+      detail.textContent='Confianza: '+low+(low===high?'':'–'+high)+' %';
+      if(detections.some(d=>d.manual))detail.textContent+=' · incluye revisión manual';
+    }else detail.textContent='Recuadros corregidos manualmente';
+    label.append(detail);
     const value=document.createElement('strong');value.textContent='× '+count;
     row.append(label,value);$('detections').append(row);
   }
+  $('senasaClass').disabled=false;
   const oldSelection=$('senasaClass').value;
   $('senasaClass').replaceChildren(new Option('Selecciona una plaga',''));
   for(const [name] of counts)$('senasaClass').add(new Option(name,name));
@@ -186,7 +241,7 @@ async function stopCamera(){
   $('freezeBtn').disabled=true;
   $('modelChoice').disabled=false;
   $('livePill').classList.remove('active');$('livePill').textContent='Sin cámara';
-  if(state.mode==='camera'){state.mode=null;state.latest=null;state.imageData=null;state.tracks=[];$('emptyState').hidden=false;$('viewportMeta').hidden=true;setupCanvas();refreshReview();}
+  if(state.mode==='camera'){state.mode=null;state.latest=null;state.imageData=null;state.tracks=[];$('emptyState').hidden=false;$('viewportMeta').hidden=true;clearResultView();setupCanvas();refreshReview();}
 }
 $('freezeBtn').addEventListener('click',async()=>{
   if(!state.imageData||!state.latest)return;
@@ -221,7 +276,9 @@ async function captureLoop(generation){
 }
 $('cameraBtn').addEventListener('click',async()=>{
   if($('modelChoice').value!=='baseline')return message('Selecciona YOLOv8n V2 para inspección con cámara.',true);
-  await stopCamera();$('photo').hidden=true;
+  state.photoRequest++;photoBusy(false);
+  await stopCamera();$('photo').hidden=true;clearResultView('Preparando cámara…');
+  $('cameraBtn').disabled=true;
   try{
     const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280}},audio:false});
      state.stream=stream;state.mode='camera';state.running=true;state.tracks=[];state.frameTimes=[];state.selected=-1;$('reviewed').checked=false;
@@ -235,25 +292,48 @@ $('cameraBtn').addEventListener('click',async()=>{
 $('stopBtn').addEventListener('click',stopCamera);
 $('photoInput').addEventListener('change',async event=>{
   const file=event.target.files[0];if(!file)return;
+  event.target.value='';
+  if(!file.size||file.size>10*1024*1024)return message('Selecciona una imagen de entre 1 byte y 10 MB.',true);
+  if(file.type&&!file.type.startsWith('image/'))return message('Selecciona un archivo de imagen, por ejemplo JPG o PNG.',true);
    await stopCamera();state.mode='photo';state.tracks=[];state.frameTimes=[];state.selected=-1;state.addBox=false;$('reviewed').checked=false;
   state.photoBlob=file;const photoRequest=++state.photoRequest;
   $('livePill').textContent='Foto cargada';
-  state.latest=null;state.imageData=null;$('saveBtn').disabled=true;
+  state.latest=null;state.imageData=null;
+  clearResultView('Preparando imagen…');refreshReview();setupCanvas();photoBusy(true);
   const reader=new FileReader();
   reader.onload=async()=>{
+    if(photoRequest!==state.photoRequest)return;
     state.imageData=reader.result;$('photo').src=reader.result;
     $('photo').hidden=false;$('emptyState').hidden=true;$('viewportMeta').hidden=false;
-    await $('photo').decode();setupCanvas();message('Analizando imagen…');
-     try{const result=await detectBlob(file);if(photoRequest!==state.photoRequest)return;updateUI(result);message('Análisis terminado. Revisa las cajas y confirma el hallazgo.');}
-    catch(error){message(error.message,true);}
-  };reader.readAsDataURL(file);
+    try{await $('photo').decode();}
+    catch(error){
+      if(photoRequest===state.photoRequest){
+        photoBusy(false);$('photo').hidden=true;$('emptyState').hidden=false;$('viewportMeta').hidden=true;
+        $('livePill').textContent='Imagen no compatible';clearResultView('No se pudo abrir la imagen.');
+        message('No se pudo abrir la imagen. Prueba con otra foto JPG o PNG.',true);
+      }
+      return;
+    }
+    if(photoRequest!==state.photoRequest)return;
+    setupCanvas();message('Analizando imagen…');
+     try{const result=await detectBlob(file);if(photoRequest!==state.photoRequest)return;updateUI(result);$('livePill').textContent='Foto analizada';message('Análisis terminado. Revisa las cajas y confirma el hallazgo.');}
+    catch(error){if(photoRequest===state.photoRequest){$('livePill').textContent='Análisis no disponible';clearResultView('No se pudo completar el análisis.');message(error.message,true);}}
+    finally{if(photoRequest===state.photoRequest)photoBusy(false);}
+  };
+  reader.onerror=()=>{
+    if(photoRequest!==state.photoRequest)return;
+    photoBusy(false);$('livePill').textContent='No se pudo leer';
+    clearResultView('Selecciona la imagen nuevamente.');message('No se pudo leer el archivo. Selecciona la imagen nuevamente.',true);
+  };
+  reader.readAsDataURL(file);
 });
 async function reanalyzePhoto(){
   if(state.mode!=='photo'||!state.photoBlob)return;
   const photoRequest=++state.photoRequest;state.latest=null;state.selected=-1;$('reviewed').checked=false;
-  $('saveBtn').disabled=true;setupCanvas();message('Analizando la foto con la configuración seleccionada…');
-  try{const result=await detectBlob(state.photoBlob);if(photoRequest!==state.photoRequest)return;updateUI(result);message('Análisis actualizado. Revisa el resultado antes de registrar.');}
-  catch(error){if(photoRequest===state.photoRequest)message(error.message,true);}
+  clearResultView('Analizando con la nueva configuración…');refreshReview();photoBusy(true);setupCanvas();message('Analizando la foto con la configuración seleccionada…');
+  try{const result=await detectBlob(state.photoBlob);if(photoRequest!==state.photoRequest)return;updateUI(result);$('livePill').textContent='Foto analizada';message('Análisis actualizado. Revisa el resultado antes de registrar.');}
+  catch(error){if(photoRequest===state.photoRequest){$('livePill').textContent='Análisis no disponible';clearResultView('No se pudo completar el análisis.');message(error.message,true);}}
+  finally{if(photoRequest===state.photoRequest)photoBusy(false);}
 }
 $('modelChoice').addEventListener('change',reanalyzePhoto);
 $('modelChoice').addEventListener('change',()=>{$('cameraBtn').disabled=$('modelChoice').value==='candidate';});
@@ -314,36 +394,50 @@ $('locationBtn').addEventListener('click',()=>{
     $('locationStatus').textContent=`Ubicación añadida: ${state.location.lat.toFixed(5)}, ${state.location.lon.toFixed(5)}`;
   },()=>{$('locationStatus').textContent='Ubicación no disponible; puedes guardar sin ella.';},{enableHighAccuracy:true,timeout:10000});
 });
+$('sector').addEventListener('input',()=>{
+  if($('sector').value.trim()){$('sectorError').hidden=true;$('sector').removeAttribute('aria-invalid');}
+});
 $('saveBtn').addEventListener('click',async()=>{
-  if(!state.latest||!state.imageData)return message('Primero analiza una imagen.',true);
-  const sector=$('sector').value.trim();if(!sector)return message('Indica el sector o lote antes de guardar.',true);
+  if(!state.latest||!state.imageData)return recordMessage('Primero analiza una imagen.',true);
+  const sector=$('sector').value.trim();
+  $('sectorError').hidden=!!sector;$('sector').setAttribute('aria-invalid',String(!sector));
+  if(!sector){$('sector').focus();return recordMessage('Falta el sector o lote.',true);}
   if($('reviewStatus').value==='confirmado'&&(state.mode!=='photo'||!$('reviewed').checked||!state.latest.detections.length))
-    return message('Para confirmar, congela el fotograma y revisa cada caja, clase e imagen.',true);
-  $('saveBtn').disabled=true;
+    return recordMessage('Para confirmar, congela el fotograma y revisa cada caja, clase e imagen.',true);
+  $('saveBtn').disabled=true;$('saveBtn').textContent='Guardando…';recordMessage('Guardando el hallazgo…');
   try{
     const response=await fetch('/api/hallazgos',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
       sector,observations:$('observations').value,status:$('reviewStatus').value,lat:state.location?.lat,lon:state.location?.lon,
        detections:state.latest.detections,image:state.imageData,model:state.latest.model,reviewed:$('reviewed').checked&&state.mode==='photo'})});
     const result=await response.json();if(!response.ok)throw new Error(result.error);
-    message('Hallazgo registrado. El supervisor debe confirmar la identificación en campo.');loadHistory();
-  }catch(error){message(error.message,true);}finally{$('saveBtn').disabled=false;}
+    recordMessage('Hallazgo guardado. Ya puedes consultarlo en el historial.');loadHistory();
+  }catch(error){recordMessage(error.message,true);}finally{$('saveBtn').disabled=!state.latest;$('saveBtn').textContent='Guardar hallazgo';}
 });
 async function loadHistory(){
+  $('history').setAttribute('aria-busy','true');
+  $('refreshBtn').disabled=true;$('historyMessage').textContent='Cargando historial…';
   try{
-    const response=await fetch('/api/hallazgos');const findings=await response.json();
+    const response=await fetch('/api/hallazgos');
+    if(!response.ok)throw new Error('No se pudo recuperar el historial.');
+    const findings=await response.json();
+    $('historyMessage').textContent=findings.length?findings.length+' registro(s) recientes':'Tu próximo hallazgo aparecerá aquí.';
     $('history').replaceChildren();
     if(!findings.length){const p=document.createElement('p');p.className='muted';p.textContent='Aún no hay hallazgos guardados.';$('history').append(p);return;}
     for(const item of findings){
       const row=document.createElement('div');row.className='history-item';
-      const img=document.createElement('img');img.src=item.image_url;img.alt='Captura del hallazgo';
+      const img=document.createElement('img');img.src=item.image_url;img.alt='Captura del hallazgo en '+item.sector;img.loading='lazy';
       const info=document.createElement('div');const title=document.createElement('strong');title.textContent=item.sector;
       const date=document.createElement('small');date.textContent=new Date(item.created_at).toLocaleString('es-PE');
-      const summary=document.createElement('p');summary.textContent=`${item.status.replace('_',' ')} · ${item.detections.length} detección(es): ${[...new Set(item.detections.map(d=>d.class_name))].join(', ') || 'ninguna'} · ${item.model}`;
-      info.append(title,date,summary);
+      const summary=document.createElement('p');summary.textContent=`${item.detections.length} detección(es) · ${[...new Set(item.detections.map(d=>d.class_name))].join(', ') || 'Sin detecciones'}`;
+      const status=document.createElement('span');status.className='history-status';status.dataset.status=item.status;
+      status.textContent=({pendiente:'Pendiente de revisión',confirmado:'Confirmado',falso_positivo:'Falso positivo'})[item.status]||item.status;
+      const model=document.createElement('small');model.textContent='Modelo: '+item.model;
+      info.append(title,date,summary,model,status);
       if(item.lat!==null&&item.lon!==null){const map=document.createElement('a');map.href=`https://www.google.com/maps?q=${encodeURIComponent(item.lat+','+item.lon)}`;map.target='_blank';map.rel='noopener';map.textContent='Ver ubicación ↗';info.append(map);}
       row.append(img,info);$('history').append(row);
     }
-  }catch(error){message('No se pudo cargar el historial.',true);}
+  }catch(error){$('historyMessage').textContent='No se pudo cargar el historial. Usa Actualizar para volver a intentarlo.';}
+  finally{$('history').setAttribute('aria-busy','false');$('refreshBtn').disabled=false;}
 }
 $('refreshBtn').addEventListener('click',loadHistory);
 async function loadModelComparison(){
@@ -366,5 +460,17 @@ async function loadModelComparison(){
     $('comparisonCard').hidden=false;
   }catch(error){/* La comparación es opcional y no afecta la inspección. */}
 }
+// Anchor navigation remains usable without JavaScript.
+const navigationLinks=[...document.querySelectorAll('.top-nav a')];
+function markNavigation(hash){
+  navigationLinks.forEach(link=>{
+    if(link.hash===hash)link.setAttribute('aria-current','location');
+    else link.removeAttribute('aria-current');
+  });
+}
+navigationLinks.forEach(link=>link.addEventListener('click',()=>markNavigation(link.hash)));
+window.addEventListener('hashchange',()=>{
+  if(navigationLinks.some(link=>link.hash===location.hash))markNavigation(location.hash);
+});
 loadModelComparison();
 loadHistory();setupCanvas();
