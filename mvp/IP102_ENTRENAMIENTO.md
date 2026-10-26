@@ -8,7 +8,7 @@ La auditoría de SHA-256 de las 99 123 imágenes encontró cuatro grupos de dupl
 
 ## Google Colab
 
-Abrir [colab_entrenar_ip102.ipynb](colab_entrenar_ip102.ipynb) en Colab y activar una GPU CUDA. El cuaderno usa los dos enlaces de Drive que compartió Alonso, verificados por nombre y tamaño con Google Drive: el ZIP de 3 698 825 898 bytes y el checkpoint original de 701 581 674 bytes. Comprueba además sus SHA‑256 contra los archivos recibidos localmente. El resultado se guarda en `/content/AgriTech-IP102-resultado` y debe descargarse antes de cerrar la sesión; no solicita acceso al Drive personal del usuario. Una sesión T4 se conectó el 26 de octubre de 2026 y verificó ambos archivos; el entrenamiento completo estaba en ejecución cuando se documentó este estado.
+Abrir [colab_entrenar_ip102.ipynb](colab_entrenar_ip102.ipynb) en Colab y activar una GPU CUDA. El cuaderno usa los dos enlaces de Drive que compartió Alonso, verificados por nombre y tamaño con Google Drive: el ZIP de 3 698 825 898 bytes y el checkpoint original de 701 581 674 bytes. Comprueba además sus SHA‑256 contra los archivos recibidos localmente. El resultado se guarda en `/content/AgriTech-IP102-resultado` y debe descargarse antes de cerrar la sesión; no solicita acceso al Drive personal del usuario. Las sesiones T4 del 26 de octubre de 2026 perdieron conexión antes de obtener un informe final verificable; sus checkpoints temporales no se consideran resultados publicados.
 
 ## Ejecutar en un equipo con GPU CUDA
 
@@ -22,7 +22,20 @@ python train_ip102_balanced.py \
   --head-epochs 2 --fine-epochs 4 --batch-size 16 --workers 2
 ```
 
-Si falta memoria GPU, bajar `--batch-size` a 8. El entrenamiento completo se detiene antes de empezar si no hay CUDA. Se ofrece `--smoke` para comprobar el proceso con cuatro imágenes por conjunto en CPU; ese modo **no produce un modelo final**.
+Si falta memoria GPU, bajar `--batch-size` a 8. Sin CUDA se exige `--allow-cpu`, pues el procesamiento puede tardar muchas horas. Se ofrece `--smoke` para comprobar el proceso con cuatro imágenes por conjunto en CPU; ese modo **no produce un modelo final**.
+
+## Ejecución local en el equipo de Michelle
+
+El equipo tiene Intel Core i5-1135G7, Intel Iris Xe y PyTorch 2.12 para CPU, sin CUDA. El 26 de octubre de 2026 se inició una ejecución local persistente que usa **todas** las imágenes del ZIP, una época de ajuste de la capa final y una época de `layer4`. La salida está en `training_runs/ip102_cpu_candidate/` y los registros en `training_runs/ip102_cpu_train.log` y `.err.log`. Comando equivalente:
+
+```bash
+python mvp/train_ip102_balanced.py --dataset C:/Users/ANGIE/Downloads/ip102_balanced_stylegan2.zip \
+  --baseline mvp/models/best_resnet152_baseline.safetensors \
+  --output mvp/training_runs/ip102_cpu_candidate \
+  --head-epochs 1 --fine-epochs 1 --batch-size 8 --workers 2 --allow-cpu
+```
+
+La ejecución local es un **candidato en curso**; no se considerará terminada hasta que aparezca `comparison.json` con `status=completed` y se valide el archivo de pesos.
 
 ## Criterio para publicar
 

@@ -151,6 +151,7 @@ def main() -> None:
     parser.add_argument("--batch-size", type=int, default=16)
     parser.add_argument("--workers", type=int, default=2)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--allow-cpu", action="store_true", help="Permite entrenamiento completo sin CUDA (puede tardar muchas horas)")
     parser.add_argument("--smoke", action="store_true", help="Prueba técnica reducida; no produce modelo final")
     args = parser.parse_args()
     if args.head_epochs < 0 or args.fine_epochs < 0 or args.head_epochs + args.fine_epochs == 0:
@@ -166,8 +167,8 @@ def main() -> None:
                    for split, entries in samples.items()}
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Dispositivo: {device}; imágenes: " + ", ".join(f"{key}={len(value)}" for key, value in samples.items()), flush=True)
-    if device.type == "cpu" and not args.smoke:
-        raise RuntimeError("Entrenamiento completo de ResNet-152 requiere GPU CUDA; el modo CPU solo admite --smoke.")
+    if device.type == "cpu" and not (args.smoke or args.allow_cpu):
+        raise RuntimeError("Para ejecutar ResNet-152 completo sin CUDA, indica --allow-cpu.")
     args.output.mkdir(parents=True, exist_ok=True)
     size = 256
     loaders = {
