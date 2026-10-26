@@ -4,6 +4,8 @@ El archivo `ip102_balanced_stylegan2.zip` contiene fotografías en `train`, `val
 
 `train_ip102_balanced.py` ajusta primero la capa de clasificación del peso vigente y luego su bloque `layer4`. Selecciona la mejor época por F1 macro de **validación**. Solo después evalúa tanto el candidato como el peso vigente sobre el mismo conjunto `test`. Guarda los pesos del candidato y `comparison.json` por separado; no modifica producción. El conjunto de prueba del ZIP puede coincidir con imágenes usadas en entrenamientos anteriores, por lo que sus métricas no sustituyen una evaluación externa con fotos nuevas.
 
+La auditoría de SHA-256 de las 99 123 imágenes encontró cuatro grupos de duplicados exactos; dos cruzan `train` y `test` (clases 56 y 92). Véase `training_runs/ip102_split_audit.json`. El efecto numérico directo sobre 22 619 fotos de prueba es pequeño, pero la métrica del ZIP no debe describirse como prueba completamente independiente. La auditoría de bytes no detecta duplicados visuales reescalados o recortados.
+
 ## Google Colab
 
 Abrir [colab_entrenar_ip102.ipynb](colab_entrenar_ip102.ipynb) en Colab y activar una GPU CUDA. El cuaderno usa los dos enlaces de Drive que compartió Alonso, verificados por nombre y tamaño con Google Drive: el ZIP de 3 698 825 898 bytes y el checkpoint original de 701 581 674 bytes. Comprueba además sus SHA‑256 contra los archivos recibidos localmente. El resultado se guarda en `/content/AgriTech-IP102-resultado` y debe descargarse antes de cerrar la sesión; no solicita acceso al Drive personal del usuario. Una sesión T4 se conectó el 26 de octubre de 2026 y verificó ambos archivos; el entrenamiento completo estaba en ejecución cuando se documentó este estado.
