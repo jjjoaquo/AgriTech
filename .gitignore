@@ -15,3 +15,5 @@ mvp/training_data/**/labels/
 mvp/dataset_candidates/**/images/
 mvp/dataset_candidates/**/review/
 mvp/training_runs/**/weights/
+mvp/models/*.safetensors
+mvp/models/*.pth

@@ -20,6 +20,7 @@ from flask import Flask, abort, jsonify, render_template, request, send_file
 from PIL import Image, ImageOps, UnidentifiedImageError
 from pypdf import PdfReader
 
+import general_classifier
 from senasa import MAPEO_PLAGAS, SIGIA_URL, consultar_sigia, extraer_productos
 
 ROOT = Path(__file__).resolve().parent
@@ -139,9 +140,34 @@ def create_app():
     init_db()
 
     @app.get("/")
+    def portal():
+        return render_template("portal.html", classifier_available=general_classifier.available())
+
+    @app.get("/esparrago")
     def index():
         return render_template("index.html", sigia_url=SIGIA_URL, class_names=CLASS_NAMES,
                                candidate_available=CANDIDATE_PATH.is_file())
+
+    @app.get("/general")
+    def general():
+        return render_template("general.html", classifier_available=general_classifier.available(),
+                               image_size=general_classifier.IMAGE_SIZE)
+
+    @app.post("/api/classify")
+    def classify():
+        if not general_classifier.available():
+            return jsonify(error="El clasificador general no está instalado en este servidor."), 503
+        file = request.files.get("image")
+        if file is None:
+            return jsonify(error="Selecciona una fotografía de una plaga."), 400
+        try:
+            image = read_image(file.read(MAX_IMAGE_BYTES + 1))
+            return jsonify(general_classifier.classify_image(image))
+        except ValueError as exc:
+            return jsonify(error=str(exc)), 400
+        except Exception:
+            app.logger.exception("Error durante la clasificación general")
+            return jsonify(error="No se pudo clasificar la fotografía."), 500
 
     @app.get("/api/model-comparison")
     def model_comparison():

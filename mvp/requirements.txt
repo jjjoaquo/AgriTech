@@ -6,3 +6,4 @@ PyYAML>=6
 pypdf>=4
 pdfplumber>=0.11
 requests>=2.31
+safetensors>=0.4

@@ -8,11 +8,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT.parent / "esparragos-mvp-produccion.tar.gz"
 FILES = [
-    "app.py", "senasa.py", "requirements.txt",
+    "app.py", "general_classifier.py", "senasa.py", "requirements.txt",
+    "models/classes_ip102.txt",
     "models/esparragos_yolov8n_v2.pt",
     "models/esparragos_yolo26n_semisupervisado.pt",
     "training_runs/yolo26n_semisupervised_v3/external_holdout_comparison.json",
 ]
+OPTIONAL_FILES = ["models/best_resnet152_baseline.safetensors"]
 
 
 def main() -> None:
@@ -22,6 +24,10 @@ def main() -> None:
             if not source.is_file():
                 raise FileNotFoundError(source)
             archive.add(source, arcname=relative)
+        for relative in OPTIONAL_FILES:
+            source = ROOT / relative
+            if source.is_file():
+                archive.add(source, arcname=relative)
         for directory in ("templates", "static"):
             for source in (ROOT / directory).rglob("*"):
                 if source.is_file():

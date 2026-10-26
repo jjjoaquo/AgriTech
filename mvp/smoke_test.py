@@ -22,6 +22,9 @@ def main() -> None:
         project.init_db()
         client = project.app.test_client()
         assert client.get("/").status_code == 200
+        assert b"Clasificaci" in client.get("/").data
+        assert client.get("/general").status_code == 200
+        assert client.get("/esparrago").status_code == 200
         comparison = client.get("/api/model-comparison")
         assert comparison.status_code in (200, 404)
 
@@ -29,6 +32,19 @@ def main() -> None:
         output = io.BytesIO()
         image.save(output, "JPEG")
         raw = output.getvalue()
+        original_available = project.general_classifier.available
+        original_classify = project.general_classifier.classify_image
+        try:
+            project.general_classifier.available = lambda: True
+            project.general_classifier.classify_image = lambda image: {
+                "predictions": [{"class_id": 0, "class_name": "rice leaf roller", "score": 0.8}],
+                "class_count": 102,
+            }
+            general = client.post("/api/classify", data={"image": (io.BytesIO(raw), "prueba.jpg")})
+            assert general.status_code == 200 and general.json["class_count"] == 102
+        finally:
+            project.general_classifier.available = original_available
+            project.general_classifier.classify_image = original_classify
         response = client.post("/api/detect", data={"image": (io.BytesIO(raw), "prueba.jpg"), "confidence": "0.45"})
         assert response.status_code == 200, response.json
         assert response.json["width"] == 320
