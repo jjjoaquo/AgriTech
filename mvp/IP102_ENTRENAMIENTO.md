@@ -6,7 +6,7 @@ El archivo `ip102_balanced_stylegan2.zip` contiene fotografías en `train`, `val
 
 ## Google Colab
 
-Abrir [colab_entrenar_ip102.ipynb](colab_entrenar_ip102.ipynb) en Colab y activar una GPU CUDA. El cuaderno usa los dos enlaces de Drive que compartió Alonso, verificados por nombre y tamaño con Google Drive: el ZIP de 3 698 825 898 bytes y el checkpoint original de 701 581 674 bytes. Comprueba además sus SHA‑256 contra los archivos recibidos localmente. Monta el Drive de quien ejecute el cuaderno para conservar el candidato y `comparison.json` si la sesión termina. **El cuaderno se ha validado sintácticamente, pero no se ha ejecutado en Colab porque no hay una sesión GPU conectada.** Quien lo ejecute debe autorizar el montaje de su Drive en Colab.
+Abrir [colab_entrenar_ip102.ipynb](colab_entrenar_ip102.ipynb) en Colab y activar una GPU CUDA. El cuaderno usa los dos enlaces de Drive que compartió Alonso, verificados por nombre y tamaño con Google Drive: el ZIP de 3 698 825 898 bytes y el checkpoint original de 701 581 674 bytes. Comprueba además sus SHA‑256 contra los archivos recibidos localmente. El resultado se guarda en `/content/AgriTech-IP102-resultado` y debe descargarse antes de cerrar la sesión; no solicita acceso al Drive personal del usuario. Una sesión T4 se conectó el 26 de octubre de 2026 y verificó ambos archivos; el entrenamiento completo estaba en ejecución cuando se documentó este estado.
 
 ## Ejecutar en un equipo con GPU CUDA
 
