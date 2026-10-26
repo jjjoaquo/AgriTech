@@ -14,15 +14,27 @@
     <a class="brand" href="/" aria-label="AgriTech, inicio"><span class="brand-icon" aria-hidden="true">✳</span><span><strong>AgriTech</strong><small>INSPECCIÓN FITOSANITARIA</small></span></a>
     <div class="top-right"><span class="badge">MVP académico</span><span class="workspace-label">Plagas en cultivos</span></div>
   </header>
-  <main>
-    <section class="portal-hero" aria-labelledby="portal-title">
-      <p class="eyebrow">DOS HERRAMIENTAS · UN FLUJO DE REVISIÓN</p>
-      <h1 id="portal-title">Observa, analiza y verifica plagas en tus cultivos.</h1>
-      <p>Elige la herramienta según tu fotografía. El clasificador general sugiere una clase para la imagen completa; el detector de espárrago localiza objetos con recuadros. Confirma siempre el resultado en campo.</p>
+  <nav class="top-nav" aria-label="Navegación principal">
+    <a href="#modulos" aria-current="location"><span aria-hidden="true">01</span> Módulos</a>
+    <a href="/general"><span aria-hidden="true">02</span> Clasificación general</a>
+    <a href="/esparrago"><span aria-hidden="true">03</span> Inspección con YOLO</a>
+  </nav>
+  <main id="inicio">
+    <section class="intro" aria-labelledby="portal-title">
+      <div>
+        <p class="eyebrow">PLAGAS EN CULTIVOS · INSPECCIÓN ASISTIDA</p>
+        <h1 id="portal-title">Una mirada más precisa <br>para cuidar tus cultivos.</h1>
+        <p>Elige la herramienta según la fotografía. ResNet sugiere una clase para la imagen completa; YOLO localiza objetos en espárrago. Tú verificas cada resultado.</p>
+      </div>
+      <ol class="steps" aria-label="Flujo de inspección">
+        <li><span class="step-number">1</span><div><strong>Elige</strong><small>Foto o cámara</small></div></li>
+        <li><span class="step-number">2</span><div><strong>Analiza</strong><small>Clasifica o detecta</small></div></li>
+        <li><span class="step-number">3</span><div><strong>Verifica</strong><small>Revisa en campo</small></div></li>
+      </ol>
     </section>
     <section id="modulos" class="portal-grid" aria-label="Módulos disponibles">
       <article class="card module-card">
-        <span class="module-kicker">01 · VARIOS CULTIVOS</span>
+        <span class="eyebrow">01 / VARIOS CULTIVOS</span>
         <h2>Clasificación general de plagas</h2>
         <p>Sube una foto cercana de la plaga. ResNet‑152 muestra las tres clases más probables entre 102 categorías. Esta prueba clasifica la foto completa y no dibuja recuadros.</p>
         <div class="module-meta"><span>Fotografía</span><span>102 clases</span><span>Experimental</span></div>
@@ -30,7 +42,7 @@
         {% if not classifier_available %}<p class="small muted">El peso ResNet aún no está instalado en este servidor.</p>{% endif %}
       </article>
       <article class="card module-card">
-        <span class="module-kicker">02 · ESPÁRRAGO</span>
+        <span class="eyebrow">02 / ESPÁRRAGO</span>
         <h2>Inspección localizada con YOLO</h2>
         <p>Analiza una foto o la cámara, ve cajas y datos sobre la imagen, corrige resultados, registra hallazgos y consulta SIGIA–SENASA para espárrago.</p>
         <div class="module-meta"><span>Foto o cámara</span><span>7 clases</span><span>Recuadros</span></div>
