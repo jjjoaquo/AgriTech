@@ -45,7 +45,7 @@
         <div class="general-caution"><strong>Revisión necesaria.</strong> El modelo siempre propone alguna de sus 102 clases, incluso si la foto no contiene una plaga conocida. Los porcentajes no son certeza ni diagnóstico. Esta versión no localiza objetos, no determina el cultivo y no consulta SENASA para estas clases.</div>
       </aside>
     </div>
-    <p class="portal-note"><strong>Estado del modelo.</strong> Se usa el peso no balanceado que entregó Alonso, con 102 clases. El preprocesamiento usa normalización ImageNet y {{ image_size }} × {{ image_size }} px, tamaño confirmado por él. El ZIP balanceado recibido contiene fotografías, pero todavía no un modelo reentrenado ni métricas de prueba de este peso. No se usa este resultado para recomendar tratamientos.</p>
+    <p class="portal-note"><strong>Estado del modelo.</strong> {% if classifier_variant == 'balanced' %}Se usa el peso reentrenado con IP102 balanceado, con 102 clases.{% else %}Se usa el peso no balanceado que entregó Alonso, con 102 clases. El ZIP balanceado aún no se publica como modelo.{% endif %} El preprocesamiento usa normalización ImageNet y {{ image_size }} × {{ image_size }} px. No se usa este resultado para recomendar tratamientos.</p>
   </main>
   <footer><strong>AgriTech</strong><span>Clasificación experimental · Verifica con un especialista.</span><a href="/">Volver al inicio ↑</a></footer>
   <script src="{{ url_for('static', filename='general.js') }}" defer></script>

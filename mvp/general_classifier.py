@@ -15,7 +15,11 @@ CLASSES_PATH = ROOT / "models" / "classes_ip102.txt"
 DEFAULT_WEIGHTS = ROOT / "models" / "best_resnet152_baseline.safetensors"
 WEIGHTS_PATH = Path(os.environ.get("AGRI_RESNET_WEIGHTS", str(DEFAULT_WEIGHTS)))
 IMAGE_SIZE = int(os.environ.get("AGRI_RESNET_IMAGE_SIZE", "256"))
-MODEL_NAME = "ResNet-152 · 102 clases (peso de Alonso)"
+MODEL_VARIANT = os.environ.get("AGRI_RESNET_VARIANT", "baseline").strip().lower()
+if MODEL_VARIANT not in {"baseline", "balanced"}:
+    raise ValueError("AGRI_RESNET_VARIANT debe ser baseline o balanced.")
+MODEL_NAME = ("ResNet-152 · 102 clases (reentrenado con IP102 balanceado)"
+              if MODEL_VARIANT == "balanced" else "ResNet-152 · 102 clases (peso de Alonso)")
 
 _model = None
 _model_lock = threading.Lock()

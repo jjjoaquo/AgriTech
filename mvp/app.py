@@ -141,7 +141,8 @@ def create_app():
 
     @app.get("/")
     def portal():
-        return render_template("portal.html", classifier_available=general_classifier.available())
+        return render_template("portal.html", classifier_available=general_classifier.available(),
+                               classifier_variant=general_classifier.MODEL_VARIANT)
 
     @app.get("/esparrago")
     def index():
@@ -151,7 +152,8 @@ def create_app():
     @app.get("/general")
     def general():
         return render_template("general.html", classifier_available=general_classifier.available(),
-                               image_size=general_classifier.IMAGE_SIZE)
+                               image_size=general_classifier.IMAGE_SIZE,
+                               classifier_variant=general_classifier.MODEL_VARIANT)
 
     @app.post("/api/classify")
     def classify():
