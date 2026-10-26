@@ -35,7 +35,7 @@
         <p id="generalResultHint" class="muted">Esperando fotografía.</p>
         <ol id="generalResults" class="general-results" aria-live="polite"></ol>
         <p id="generalTime" class="small muted"></p>
-        <div class="general-caution"><strong>Revisión necesaria.</strong> Los porcentajes son salidas del modelo, no certeza ni diagnóstico. Esta versión no localiza objetos, no determina el cultivo y no consulta SENASA para estas 102 clases.</div>
+        <div class="general-caution"><strong>Revisión necesaria.</strong> El modelo siempre propone alguna de sus 102 clases, incluso si la foto no contiene una plaga conocida. Los porcentajes no son certeza ni diagnóstico. Esta versión no localiza objetos, no determina el cultivo y no consulta SENASA para estas clases.</div>
       </aside>
     </div>
     <p class="portal-note"><strong>Estado del modelo.</strong> Peso baseline de Alonso, 102 clases. El preprocesamiento usa normalización ImageNet y {{ image_size }} px, valor operativo basado en TorchVision; el tamaño original de entrenamiento y las métricas de prueba no figuran en los archivos entregados. No se usa este resultado para recomendar tratamientos.</p>
