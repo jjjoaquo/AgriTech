@@ -24,7 +24,7 @@ node --check static/general.js
 
 ## Modelos y resultados
 
-- `models/classes_ip102.txt` contiene las 102 etiquetas que proporcionó Alonso. `models/best_resnet152_baseline.safetensors` es su peso baseline convertido desde `.pth` sin el estado del optimizador; el archivo pesa aproximadamente 234 MB y no se publica en Git. El checkpoint informa F1 macro de validación 0,6365 en la época 7, pero no incluye métricas de prueba ni el valor original de `IMG_SIZE`. Se usa 224 px por la convención del ResNet‑152 preentrenado; véase [CLASIFICADOR_GENERAL.md](CLASIFICADOR_GENERAL.md). Esa cifra no acredita desempeño real del clasificador.
+- `models/classes_ip102.txt` contiene las 102 etiquetas que proporcionó Alonso. `models/best_resnet152_baseline.safetensors` deriva directamente del `.pth` entregado, sin el estado del optimizador; pesa aproximadamente 234 MB y no se publica en Git. El checkpoint informa F1 macro de validación 0,6365 con `epoch=7`, pero no incluye métricas de prueba ni el valor original de `IMG_SIZE`. Se usa 224 px como valor operativo; véase [CLASIFICADOR_GENERAL.md](CLASIFICADOR_GENERAL.md). Falta confirmar con Alonso si el archivo corresponde a su entrenamiento balanceado y cómo se relaciona con las métricas del notebook.
 - `models/esparragos_yolov8n_v2.pt` es el detector predeterminado del MVP. Es el peso V2 del equipo.
 - `models/esparragos_yolo26n_semisupervisado.pt` es un experimento disponible solo para comparar fotografías. En 32 fotos externas reservadas detectó la clase esperada en 6, frente a 25 de V2; esta prueba no tiene cajas verificadas y no demuestra precisión en parcelas.
 - El umbral inicial del detector V2 es 30 %. En la prueba de umbral a 640 px encontró la clase esperada en 24 de 32 fotos, frente a 21 con 45 %.
