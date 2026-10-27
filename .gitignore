@@ -17,5 +17,8 @@ mvp/dataset_candidates/**/review/
 mvp/training_runs/**/weights/
 mvp/models/*.safetensors
 mvp/training_runs/**/*.safetensors
+mvp/training_runs/**/*.pt
+mvp/training_runs/**/*.tmp
+mvp/training_runs/*_smoke/
 mvp/training_runs/*.log
 mvp/models/*.pth

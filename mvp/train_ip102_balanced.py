@@ -10,6 +10,7 @@ import argparse
 import hashlib
 import io
 import json
+import os
 import random
 import time
 import zipfile
@@ -19,7 +20,7 @@ from pathlib import Path
 import torch
 from PIL import Image
 from safetensors.torch import load_file, save_file
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader, Dataset, Subset
 from torchvision import transforms
 from torchvision.models import resnet152
 
@@ -102,7 +103,8 @@ def metrics(confusion: torch.Tensor) -> dict:
     }
 
 
-def run_epoch(model, loader, device, optimizer=None, scaler=None) -> dict:
+def run_epoch(model, loader, device, optimizer=None, scaler=None, *, confusion=None,
+              loss_sum=0.0, checkpoint=None, start_batch=0) -> dict:
     training = optimizer is not None
     model.train(training)
     # Los BatchNorm preentrenados se mantienen fijos en ambas etapas.
@@ -110,9 +112,9 @@ def run_epoch(model, loader, device, optimizer=None, scaler=None) -> dict:
         for module in model.modules():
             if isinstance(module, torch.nn.modules.batchnorm._BatchNorm):
                 module.eval()
-    confusion = torch.zeros((CLASSES, CLASSES), dtype=torch.int64)
-    loss_sum = 0.0
-    for images, labels in loader:
+    if confusion is None:
+        confusion = torch.zeros((CLASSES, CLASSES), dtype=torch.int64)
+    for batch_number, (images, labels) in enumerate(loader, start=start_batch):
         images = images.to(device, non_blocking=True)
         labels = labels.to(device, non_blocking=True)
         if training:
@@ -128,6 +130,8 @@ def run_epoch(model, loader, device, optimizer=None, scaler=None) -> dict:
         predictions = logits.argmax(dim=1)
         indices = (labels * CLASSES + predictions).cpu()
         confusion += torch.bincount(indices, minlength=CLASSES * CLASSES).reshape(CLASSES, CLASSES)
+        if checkpoint is not None:
+            checkpoint(batch_number + 1, confusion, loss_sum)
     result = metrics(confusion)
     result["loss"] = round(loss_sum / max(result["total"], 1), 6)
     return result
@@ -153,10 +157,12 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--allow-cpu", action="store_true", help="Permite entrenamiento completo sin CUDA (puede tardar muchas horas)")
     parser.add_argument("--smoke", action="store_true", help="Prueba técnica reducida; no produce modelo final")
+    parser.add_argument("--checkpoint-batches", type=int, default=250,
+                        help="Guardar reanudación cada N lotes de entrenamiento")
     args = parser.parse_args()
     if args.head_epochs < 0 or args.fine_epochs < 0 or args.head_epochs + args.fine_epochs == 0:
         parser.error("Debe haber al menos una época de entrenamiento.")
-    if args.batch_size < 1 or args.workers < 0:
+    if args.batch_size < 1 or args.workers < 0 or args.checkpoint_batches < 1:
         parser.error("Lote y trabajadores deben ser válidos.")
     random.seed(args.seed)
     torch.manual_seed(args.seed)
@@ -182,7 +188,38 @@ def main() -> None:
     best_f1 = -1.0
     history = []
     candidate_path = args.output / "best_resnet152_balanced_candidate.safetensors"
-    for epoch in range(args.head_epochs + args.fine_epochs):
+    checkpoint_path = args.output / "training_checkpoint.pt"
+    start_epoch = 0
+    resume = None
+    if checkpoint_path.exists():
+        resume = torch.load(checkpoint_path, map_location="cpu", weights_only=True)
+        if (resume["dataset_path"] != str(args.dataset.resolve()) or
+                resume["baseline_path"] != str(args.baseline.resolve()) or
+                resume["batch_size"] != args.batch_size or
+                resume["head_epochs"] != args.head_epochs or
+                resume["fine_epochs"] != args.fine_epochs or
+                resume["seed"] != args.seed):
+            raise ValueError("El checkpoint no coincide con los parámetros de este entrenamiento.")
+        model.load_state_dict(resume["model"])
+        start_epoch = resume["epoch"]
+        best_f1 = resume["best_f1"]
+        history = resume["history"]
+        print(f"Reanudando época {start_epoch + 1} desde imagen {resume['next_index']}", flush=True)
+
+    def save_checkpoint(epoch, next_index, confusion, loss_sum, optimizer):
+        payload = {
+            "dataset_path": str(args.dataset.resolve()), "baseline_path": str(args.baseline.resolve()),
+            "batch_size": args.batch_size, "head_epochs": args.head_epochs,
+            "fine_epochs": args.fine_epochs, "seed": args.seed, "epoch": epoch,
+            "next_index": next_index, "confusion": confusion, "loss_sum": loss_sum,
+            "model": model.state_dict(), "optimizer": optimizer.state_dict() if optimizer else None,
+            "best_f1": best_f1, "history": history,
+        }
+        temporary = checkpoint_path.with_suffix(".tmp")
+        torch.save(payload, temporary)
+        os.replace(temporary, checkpoint_path)
+
+    for epoch in range(start_epoch, args.head_epochs + args.fine_epochs):
         fine = epoch >= args.head_epochs
         for parameter in model.parameters():
             parameter.requires_grad = False
@@ -193,8 +230,27 @@ def main() -> None:
                 parameter.requires_grad = True
         optimizer = torch.optim.AdamW((p for p in model.parameters() if p.requires_grad),
                                       lr=1e-5 if fine else 1e-3, weight_decay=1e-4)
+        next_index = resume["next_index"] if resume is not None and epoch == start_epoch else 0
+        initial_confusion = resume["confusion"] if next_index else None
+        initial_loss = resume["loss_sum"] if next_index else 0.0
+        if next_index and resume["optimizer"] is not None:
+            optimizer.load_state_dict(resume["optimizer"])
+        order = torch.randperm(len(samples["train"]), generator=torch.Generator().manual_seed(args.seed + epoch)).tolist()
+        remaining = Subset(loaders["train"].dataset, order[next_index:])
+        train_loader = DataLoader(remaining, batch_size=args.batch_size, shuffle=False,
+                                  num_workers=args.workers, pin_memory=device.type == "cuda")
         start = time.monotonic()
-        train = run_epoch(model, loaders["train"], device, optimizer, scaler)
+        total_batches = (len(samples["train"]) + args.batch_size - 1) // args.batch_size
+
+        def maybe_checkpoint(batch_number, confusion, loss_sum):
+            if batch_number % args.checkpoint_batches == 0 or batch_number == total_batches:
+                processed = min(batch_number * args.batch_size, len(samples["train"]))
+                save_checkpoint(epoch, processed, confusion, loss_sum, optimizer)
+                print(f"Época {epoch + 1}: {processed}/{len(samples['train'])} imágenes", flush=True)
+
+        train = run_epoch(model, train_loader, device, optimizer, scaler,
+                          confusion=initial_confusion, loss_sum=initial_loss,
+                          checkpoint=maybe_checkpoint, start_batch=next_index // args.batch_size)
         validation = run_epoch(model, loaders["val"], device)
         record = {"epoch": epoch + 1, "stage": "layer4+head" if fine else "head", "train": train,
                   "validation": validation, "seconds": round(time.monotonic() - start)}
@@ -207,6 +263,8 @@ def main() -> None:
                       str(candidate_path), metadata={"architecture": "resnet152", "classes": "102",
                       "image_size": "256", "training": "ip102_balanced_stylegan2",
                       "baseline_sha256": sha256(args.baseline), "best_epoch": str(epoch + 1)})
+        save_checkpoint(epoch + 1, 0, torch.zeros((CLASSES, CLASSES), dtype=torch.int64), 0.0, None)
+        resume = None
     # El conjunto test solo se usa después de fijar la época por validación.
     candidate = build_model(candidate_path).to(device)
     candidate_test = run_epoch(candidate, loaders["test"], device)
@@ -224,6 +282,7 @@ def main() -> None:
         "candidate_path": str(candidate_path),
     }
     (args.output / "comparison.json").write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+    checkpoint_path.unlink(missing_ok=True)
     print(f"Comparación guardada en {args.output / 'comparison.json'}", flush=True)
     if not args.smoke and not report["candidate_improves_macro_f1"]:
         print("El candidato no supera al peso publicado; no desplegar.", flush=True)

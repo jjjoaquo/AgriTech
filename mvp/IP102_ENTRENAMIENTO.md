@@ -37,6 +37,8 @@ python mvp/train_ip102_balanced.py --dataset C:/Users/ANGIE/Downloads/ip102_bala
 
 La ejecución local es un **candidato en curso**; no se considerará terminada hasta que aparezca `comparison.json` con `status=completed` y se valide el archivo de pesos.
 
+Tras el reinicio inesperado de Windows del 27 de octubre de 2026, la ejecución inicial perdió el avance de su primera época porque todavía no había guardado pesos. El script ahora guarda `training_checkpoint.pt` cada 250 lotes y al terminar cada época. Al relanzar el mismo comando con los mismos parámetros, reanuda desde el último checkpoint y registra el número de imágenes procesadas. El archivo temporal se reemplaza de forma atómica y se excluye de Git.
+
 ## Criterio para publicar
 
 1. Comprobar en `comparison.json` que el candidato mejora al peso actual en F1 macro sobre el mismo `test`. Revisar también accuracy, balanced accuracy y recall por clase para detectar daños en clases concretas.
