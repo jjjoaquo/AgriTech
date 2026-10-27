@@ -60,6 +60,20 @@ def scan_zip(path: Path) -> dict[str, list[tuple[str, int]]]:
     return samples
 
 
+def cap_synthetic_per_class(entries: list[tuple[str, int]], cap: int, seed: int) -> list[tuple[str, int]]:
+    """Conserva todas las fotos reales y una muestra sintética estable por clase."""
+    synthetic = {label: [] for label in range(CLASSES)}
+    for name, label in entries:
+        if "synth_stylegan2_" in name:
+            synthetic[label].append(name)
+    keep = set()
+    for label, names in synthetic.items():
+        ranked = sorted(names, key=lambda name: hashlib.sha256(f"{seed}:{name}".encode()).digest())
+        keep.update(ranked[:cap])
+    return [(name, label) for name, label in entries
+            if "synth_stylegan2_" not in name or name in keep]
+
+
 class ZipImages(Dataset):
     def __init__(self, path: Path, entries: list[tuple[str, int]], training: bool, size: int):
         self.path = path
@@ -159,14 +173,20 @@ def main() -> None:
     parser.add_argument("--smoke", action="store_true", help="Prueba técnica reducida; no produce modelo final")
     parser.add_argument("--checkpoint-batches", type=int, default=250,
                         help="Guardar reanudación cada N lotes de entrenamiento")
+    parser.add_argument("--synthetic-cap-per-class", type=int,
+                        help="Máximo de imágenes StyleGAN2 por clase; conserva todas las fotos reales")
     args = parser.parse_args()
     if args.head_epochs < 0 or args.fine_epochs < 0 or args.head_epochs + args.fine_epochs == 0:
         parser.error("Debe haber al menos una época de entrenamiento.")
     if args.batch_size < 1 or args.workers < 0 or args.checkpoint_batches < 1:
         parser.error("Lote y trabajadores deben ser válidos.")
+    if args.synthetic_cap_per_class is not None and args.synthetic_cap_per_class < 0:
+        parser.error("El máximo de imágenes sintéticas debe ser no negativo.")
     random.seed(args.seed)
     torch.manual_seed(args.seed)
     samples = scan_zip(args.dataset)
+    if args.synthetic_cap_per_class is not None:
+        samples["train"] = cap_synthetic_per_class(samples["train"], args.synthetic_cap_per_class, args.seed)
     if args.smoke:
         samples = {split: [entry for label in (0, 1)
                            for entry in [item for item in entries if item[1] == label][:2]]
@@ -198,6 +218,7 @@ def main() -> None:
                 resume["batch_size"] != args.batch_size or
                 resume["head_epochs"] != args.head_epochs or
                 resume["fine_epochs"] != args.fine_epochs or
+                resume.get("synthetic_cap_per_class") != args.synthetic_cap_per_class or
                 resume["seed"] != args.seed):
             raise ValueError("El checkpoint no coincide con los parámetros de este entrenamiento.")
         model.load_state_dict(resume["model"])
@@ -211,6 +232,7 @@ def main() -> None:
             "dataset_path": str(args.dataset.resolve()), "baseline_path": str(args.baseline.resolve()),
             "batch_size": args.batch_size, "head_epochs": args.head_epochs,
             "fine_epochs": args.fine_epochs, "seed": args.seed, "epoch": epoch,
+            "synthetic_cap_per_class": args.synthetic_cap_per_class,
             "next_index": next_index, "confusion": confusion, "loss_sum": loss_sum,
             "model": model.state_dict(), "optimizer": optimizer.state_dict() if optimizer else None,
             "best_f1": best_f1, "history": history,
@@ -276,6 +298,7 @@ def main() -> None:
         "dataset_sha256": sha256(args.dataset), "baseline_sha256": sha256(args.baseline),
         "split_counts": {key: len(value) for key, value in samples.items()},
         "synthetic_train_count": sum("synth_stylegan2_" in name for name, _ in samples["train"]),
+        "synthetic_cap_per_class": args.synthetic_cap_per_class,
         "image_size": size, "seed": args.seed, "history": history,
         "candidate_test": candidate_test, "baseline_test": baseline_test,
         "candidate_improves_macro_f1": candidate_test["macro_f1"] > baseline_test["macro_f1"],
