@@ -1,0 +1,33 @@
+{
+  "counts": {
+    "train": 68996,
+    "val": 7508,
+    "test": 22619
+  },
+  "exact_duplicate_groups": 4,
+  "cross_split_duplicate_groups": 2,
+  "cross_split_examples": [
+    {
+      "sha256": "7a1683d7b65e63e92153e2c437b0078f93e8ed2853a2e12a824179ab2ab92502",
+      "splits": [
+        "test",
+        "train"
+      ],
+      "files": [
+        "dataset_balanced_stylegan2/train/56/40410.jpg",
+        "dataset_balanced_stylegan2/test/56/40432.jpg"
+      ]
+    },
+    {
+      "sha256": "84548d3ac0be8318a9fc56784d11e49a26a5c5cef49066e4ddae26da47d293f9",
+      "splits": [
+        "test",
+        "train"
+      ],
+      "files": [
+        "dataset_balanced_stylegan2/train/92/65553.jpg",
+        "dataset_balanced_stylegan2/test/92/66152.jpg"
+      ]
+    }
+  ]
+}

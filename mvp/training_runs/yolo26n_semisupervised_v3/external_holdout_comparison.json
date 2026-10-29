@@ -1,0 +1,950 @@
+{
+  "evaluation": "Presencia de la clase esperada en 32 fotos externas reservadas; sin cajas verificadas, no es mAP ni precisión de campo.",
+  "settings": {
+    "initial_weights": "C:\\Users\\ANGIE\\Downloads\\esparragos-mvp-mejorado\\models\\esparragos_yolo26n_experimental.pt",
+    "epochs_max": 15,
+    "imgsz": 512,
+    "optimizer": "AdamW",
+    "lr0": 0.0005,
+    "mosaic": 0.5,
+    "external_pseudo_labeled": 44
+  },
+  "baseline": {
+    "model": "C:\\Users\\ANGIE\\Downloads\\esparragos-mvp-mejorado\\models\\esparragos_yolov8n_v2.pt",
+    "hit_count": 25,
+    "total": 32,
+    "other_class_boxes": 1,
+    "median_inference_ms": 96.6,
+    "by_class": {
+      "0": {
+        "hits": 6,
+        "total": 6
+      },
+      "1": {
+        "hits": 5,
+        "total": 6
+      },
+      "2": {
+        "hits": 5,
+        "total": 6
+      },
+      "3": {
+        "hits": 2,
+        "total": 2
+      },
+      "5": {
+        "hits": 4,
+        "total": 6
+      },
+      "6": {
+        "hits": 3,
+        "total": 6
+      }
+    },
+    "details": [
+      {
+        "image_file": "images/0_Chloridea_virescens_adulto/inat_16223216_24345226.jpg",
+        "expected_class": 0,
+        "predicted_classes": [
+          0
+        ],
+        "hit": true,
+        "other_class_boxes": 0,
+        "inference_ms": 171.5
+      },
+      {
+        "image_file": "images/0_Chloridea_virescens_adulto/inat_4250665_5083191.jpg",
+        "expected_class": 0,
+        "predicted_classes": [
+          0
+        ],
+        "hit": true,
+        "other_class_boxes": 0,
+        "inference_ms": 114.9
+      },
+      {
+        "image_file": "images/0_Chloridea_virescens_adulto/inat_46027952_73001526.jpg",
+        "expected_class": 0,
+        "predicted_classes": [
+          0
+        ],
+        "hit": true,
+        "other_class_boxes": 0,
+        "inference_ms": 84.5
+      },
+      {
+        "image_file": "images/0_Chloridea_virescens_adulto/inat_56903265_90717581.jpg",
+        "expected_class": 0,
+        "predicted_classes": [
+          0
+        ],
+        "hit": true,
+        "other_class_boxes": 0,
+        "inference_ms": 168.4
+      },
+      {
+        "image_file": "images/0_Chloridea_virescens_adulto/inat_7470421_9723242.jpg",
+        "expected_class": 0,
+        "predicted_classes": [
+          0
+        ],
+        "hit": true,
+        "other_class_boxes": 0,
+        "inference_ms": 109.9
+      },
+      {
+        "image_file": "images/0_Chloridea_virescens_adulto/inat_8103932_10749925.jpg",
+        "expected_class": 0,
+        "predicted_classes": [
+          0
+        ],
+        "hit": true,
+        "other_class_boxes": 0,
+        "inference_ms": 135.1
+      },
+      {
+        "image_file": "images/1_Chloridea_virescens_larva/inat_104645890_175389456.jpg",
+        "expected_class": 1,
+        "predicted_classes": [
+          1
+        ],
+        "hit": true,
+        "other_class_boxes": 0,
+        "inference_ms": 64.0
+      },
+      {
+        "image_file": "images/1_Chloridea_virescens_larva/inat_14716922_21973104.jpg",
+        "expected_class": 1,
+        "predicted_classes": [
+          1
+        ],
+        "hit": true,
+        "other_class_boxes": 0,
+        "inference_ms": 84.7
+      },
+      {
+        "image_file": "images/1_Chloridea_virescens_larva/inat_31453720_49227663.jpg",
+        "expected_class": 1,
+        "predicted_classes": [],
+        "hit": false,
+        "other_class_boxes": 0,
+        "inference_ms": 140.1
+      },
+      {
+        "image_file": "images/1_Chloridea_virescens_larva/inat_32507855_50993690.jpg",
+        "expected_class": 1,
+        "predicted_classes": [
+          1
+        ],
+        "hit": true,
+        "other_class_boxes": 0,
+        "inference_ms": 83.5
+      },
+      {
+        "image_file": "images/1_Chloridea_virescens_larva/inat_33166327_52067228.jpg",
+        "expected_class": 1,
+        "predicted_classes": [
+          1,
+          1
+        ],
+        "hit": true,
+        "other_class_boxes": 0,
+        "inference_ms": 81.3
+      },
+      {
+        "image_file": "images/1_Chloridea_virescens_larva/inat_76924538_125805812.jpg",
+        "expected_class": 1,
+        "predicted_classes": [
+          1
+        ],
+        "hit": true,
+        "other_class_boxes": 0,
+        "inference_ms": 85.7
+      },
+      {
+        "image_file": "images/2_Chrysodeixis_includens_adulto/inat_3742793_4351099.jpg",
+        "expected_class": 2,
+        "predicted_classes": [
+          2
+        ],
+        "hit": true,
+        "other_class_boxes": 0,
+        "inference_ms": 102.9
+      },
+      {
+        "image_file": "images/2_Chrysodeixis_includens_adulto/inat_3972464_4683396.jpg",
+        "expected_class": 2,
+        "predicted_classes": [
+          2,
+          2
+        ],
+        "hit": true,
+        "other_class_boxes": 0,
+        "inference_ms": 114.0
+      },
+      {
+        "image_file": "images/2_Chrysodeixis_includens_adulto/inat_3979454_4693424.jpg",
+        "expected_class": 2,
+        "predicted_classes": [
+          2,
+          2
+        ],
+        "hit": true,
+        "other_class_boxes": 0,
+        "inference_ms": 80.4
+      },
+      {
+        "image_file": "images/2_Chrysodeixis_includens_adulto/inat_3987422_4707264.jpg",
+        "expected_class": 2,
+        "predicted_classes": [
+          1
+        ],
+        "hit": false,
+        "other_class_boxes": 1,
+        "inference_ms": 99.9
+      },
+      {
+        "image_file": "images/2_Chrysodeixis_includens_adulto/inat_3994521_4716195.jpg",
+        "expected_class": 2,
+        "predicted_classes": [
+          2
+        ],
+        "hit": true,
+        "other_class_boxes": 0,
+        "inference_ms": 115.2
+      },
+      {
+        "image_file": "images/2_Chrysodeixis_includens_adulto/inat_894994_1138547.jpg",
+        "expected_class": 2,
+        "predicted_classes": [
+          2
+        ],
+        "hit": true,
+        "other_class_boxes": 0,
+        "inference_ms": 72.7
+      },
+      {
+        "image_file": "images/3_Chrysodeixis_includens_larva/inat_392576953_719465633.jpg",
+        "expected_class": 3,
+        "predicted_classes": [
+          3
+        ],
+        "hit": true,
+        "other_class_boxes": 0,
+        "inference_ms": 126.5
+      },
+      {
+        "image_file": "images/3_Chrysodeixis_includens_larva/inat_65471220_105386401.jpg",
+        "expected_class": 3,
+        "predicted_classes": [
+          3
+        ],
+        "hit": true,
+        "other_class_boxes": 0,
+        "inference_ms": 81.3
+      },
+      {
+        "image_file": "images/5_Spodoptera_eridania_adulto/inat_2267436_2554510.jpg",
+        "expected_class": 5,
+        "predicted_classes": [
+          5
+        ],
+        "hit": true,
+        "other_class_boxes": 0,
+        "inference_ms": 119.8
+      },
+      {
+        "image_file": "images/5_Spodoptera_eridania_adulto/inat_2708888_3051995.jpg",
+        "expected_class": 5,
+        "predicted_classes": [],
+        "hit": false,
+        "other_class_boxes": 0,
+        "inference_ms": 73.2
+      },
+      {
+        "image_file": "images/5_Spodoptera_eridania_adulto/inat_7147727_9203951.jpg",
+        "expected_class": 5,
+        "predicted_classes": [
+          5
+        ],
+        "hit": true,
+        "other_class_boxes": 0,
+        "inference_ms": 71.2
+      },
+      {
+        "image_file": "images/5_Spodoptera_eridania_adulto/inat_7758571_10188755.jpg",
+        "expected_class": 5,
+        "predicted_classes": [
+          5
+        ],
+        "hit": true,
+        "other_class_boxes": 0,
+        "inference_ms": 74.2
+      },
+      {
+        "image_file": "images/5_Spodoptera_eridania_adulto/inat_8508154_11354001.jpg",
+        "expected_class": 5,
+        "predicted_classes": [],
+        "hit": false,
+        "other_class_boxes": 0,
+        "inference_ms": 129.6
+      },
+      {
+        "image_file": "images/5_Spodoptera_eridania_adulto/inat_8667423_11610439.jpg",
+        "expected_class": 5,
+        "predicted_classes": [
+          5
+        ],
+        "hit": true,
+        "other_class_boxes": 0,
+        "inference_ms": 92.9
+      },
+      {
+        "image_file": "images/6_Spodoptera_eridania_larva/inat_103021842_172333823.jpg",
+        "expected_class": 6,
+        "predicted_classes": [
+          6
+        ],
+        "hit": true,
+        "other_class_boxes": 0,
+        "inference_ms": 106.9
+      },
+      {
+        "image_file": "images/6_Spodoptera_eridania_larva/inat_183556833_320256933.jpg",
+        "expected_class": 6,
+        "predicted_classes": [],
+        "hit": false,
+        "other_class_boxes": 0,
+        "inference_ms": 126.8
+      },
+      {
+        "image_file": "images/6_Spodoptera_eridania_larva/inat_64900946_104412251.jpg",
+        "expected_class": 6,
+        "predicted_classes": [],
+        "hit": false,
+        "other_class_boxes": 0,
+        "inference_ms": 96.6
+      },
+      {
+        "image_file": "images/6_Spodoptera_eridania_larva/inat_68272394_110503733.jpg",
+        "expected_class": 6,
+        "predicted_classes": [
+          6
+        ],
+        "hit": true,
+        "other_class_boxes": 0,
+        "inference_ms": 83.2
+      },
+      {
+        "image_file": "images/6_Spodoptera_eridania_larva/inat_85009842_139793413.jpg",
+        "expected_class": 6,
+        "predicted_classes": [
+          6
+        ],
+        "hit": true,
+        "other_class_boxes": 0,
+        "inference_ms": 87.3
+      },
+      {
+        "image_file": "images/6_Spodoptera_eridania_larva/inat_872238_1107764.jpg",
+        "expected_class": 6,
+        "predicted_classes": [],
+        "hit": false,
+        "other_class_boxes": 0,
+        "inference_ms": 82.2
+      }
+    ]
+  },
+  "candidate": {
+    "model": "C:\\Users\\ANGIE\\Downloads\\esparragos-mvp-mejorado\\training_runs\\yolo26n_semisupervised_v3\\weights\\best.pt",
+    "hit_count": 6,
+    "total": 32,
+    "other_class_boxes": 1,
+    "median_inference_ms": 90.0,
+    "by_class": {
+      "0": {
+        "hits": 0,
+        "total": 6
+      },
+      "1": {
+        "hits": 1,
+        "total": 6
+      },
+      "2": {
+        "hits": 3,
+        "total": 6
+      },
+      "3": {
+        "hits": 1,
+        "total": 2
+      },
+      "5": {
+        "hits": 1,
+        "total": 6
+      },
+      "6": {
+        "hits": 0,
+        "total": 6
+      }
+    },
+    "details": [
+      {
+        "image_file": "images/0_Chloridea_virescens_adulto/inat_16223216_24345226.jpg",
+        "expected_class": 0,
+        "predicted_classes": [],
+        "hit": false,
+        "other_class_boxes": 0,
+        "inference_ms": 208.2
+      },
+      {
+        "image_file": "images/0_Chloridea_virescens_adulto/inat_4250665_5083191.jpg",
+        "expected_class": 0,
+        "predicted_classes": [],
+        "hit": false,
+        "other_class_boxes": 0,
+        "inference_ms": 134.8
+      },
+      {
+        "image_file": "images/0_Chloridea_virescens_adulto/inat_46027952_73001526.jpg",
+        "expected_class": 0,
+        "predicted_classes": [],
+        "hit": false,
+        "other_class_boxes": 0,
+        "inference_ms": 69.6
+      },
+      {
+        "image_file": "images/0_Chloridea_virescens_adulto/inat_56903265_90717581.jpg",
+        "expected_class": 0,
+        "predicted_classes": [],
+        "hit": false,
+        "other_class_boxes": 0,
+        "inference_ms": 123.9
+      },
+      {
+        "image_file": "images/0_Chloridea_virescens_adulto/inat_7470421_9723242.jpg",
+        "expected_class": 0,
+        "predicted_classes": [],
+        "hit": false,
+        "other_class_boxes": 0,
+        "inference_ms": 102.7
+      },
+      {
+        "image_file": "images/0_Chloridea_virescens_adulto/inat_8103932_10749925.jpg",
+        "expected_class": 0,
+        "predicted_classes": [],
+        "hit": false,
+        "other_class_boxes": 0,
+        "inference_ms": 103.4
+      },
+      {
+        "image_file": "images/1_Chloridea_virescens_larva/inat_104645890_175389456.jpg",
+        "expected_class": 1,
+        "predicted_classes": [],
+        "hit": false,
+        "other_class_boxes": 0,
+        "inference_ms": 62.5
+      },
+      {
+        "image_file": "images/1_Chloridea_virescens_larva/inat_14716922_21973104.jpg",
+        "expected_class": 1,
+        "predicted_classes": [],
+        "hit": false,
+        "other_class_boxes": 0,
+        "inference_ms": 65.6
+      },
+      {
+        "image_file": "images/1_Chloridea_virescens_larva/inat_31453720_49227663.jpg",
+        "expected_class": 1,
+        "predicted_classes": [],
+        "hit": false,
+        "other_class_boxes": 0,
+        "inference_ms": 89.4
+      },
+      {
+        "image_file": "images/1_Chloridea_virescens_larva/inat_32507855_50993690.jpg",
+        "expected_class": 1,
+        "predicted_classes": [],
+        "hit": false,
+        "other_class_boxes": 0,
+        "inference_ms": 63.5
+      },
+      {
+        "image_file": "images/1_Chloridea_virescens_larva/inat_33166327_52067228.jpg",
+        "expected_class": 1,
+        "predicted_classes": [],
+        "hit": false,
+        "other_class_boxes": 0,
+        "inference_ms": 78.4
+      },
+      {
+        "image_file": "images/1_Chloridea_virescens_larva/inat_76924538_125805812.jpg",
+        "expected_class": 1,
+        "predicted_classes": [
+          1,
+          1,
+          1
+        ],
+        "hit": true,
+        "other_class_boxes": 0,
+        "inference_ms": 67.9
+      },
+      {
+        "image_file": "images/2_Chrysodeixis_includens_adulto/inat_3742793_4351099.jpg",
+        "expected_class": 2,
+        "predicted_classes": [
+          2
+        ],
+        "hit": true,
+        "other_class_boxes": 0,
+        "inference_ms": 69.3
+      },
+      {
+        "image_file": "images/2_Chrysodeixis_includens_adulto/inat_3972464_4683396.jpg",
+        "expected_class": 2,
+        "predicted_classes": [],
+        "hit": false,
+        "other_class_boxes": 0,
+        "inference_ms": 81.1
+      },
+      {
+        "image_file": "images/2_Chrysodeixis_includens_adulto/inat_3979454_4693424.jpg",
+        "expected_class": 2,
+        "predicted_classes": [
+          2,
+          2,
+          2
+        ],
+        "hit": true,
+        "other_class_boxes": 0,
+        "inference_ms": 67.2
+      },
+      {
+        "image_file": "images/2_Chrysodeixis_includens_adulto/inat_3987422_4707264.jpg",
+        "expected_class": 2,
+        "predicted_classes": [],
+        "hit": false,
+        "other_class_boxes": 0,
+        "inference_ms": 69.6
+      },
+      {
+        "image_file": "images/2_Chrysodeixis_includens_adulto/inat_3994521_4716195.jpg",
+        "expected_class": 2,
+        "predicted_classes": [],
+        "hit": false,
+        "other_class_boxes": 0,
+        "inference_ms": 100.5
+      },
+      {
+        "image_file": "images/2_Chrysodeixis_includens_adulto/inat_894994_1138547.jpg",
+        "expected_class": 2,
+        "predicted_classes": [
+          2,
+          2
+        ],
+        "hit": true,
+        "other_class_boxes": 0,
+        "inference_ms": 88.2
+      },
+      {
+        "image_file": "images/3_Chrysodeixis_includens_larva/inat_392576953_719465633.jpg",
+        "expected_class": 3,
+        "predicted_classes": [],
+        "hit": false,
+        "other_class_boxes": 0,
+        "inference_ms": 149.5
+      },
+      {
+        "image_file": "images/3_Chrysodeixis_includens_larva/inat_65471220_105386401.jpg",
+        "expected_class": 3,
+        "predicted_classes": [
+          3,
+          3
+        ],
+        "hit": true,
+        "other_class_boxes": 0,
+        "inference_ms": 119.5
+      },
+      {
+        "image_file": "images/5_Spodoptera_eridania_adulto/inat_2267436_2554510.jpg",
+        "expected_class": 5,
+        "predicted_classes": [
+          5
+        ],
+        "hit": true,
+        "other_class_boxes": 0,
+        "inference_ms": 205.2
+      },
+      {
+        "image_file": "images/5_Spodoptera_eridania_adulto/inat_2708888_3051995.jpg",
+        "expected_class": 5,
+        "predicted_classes": [],
+        "hit": false,
+        "other_class_boxes": 0,
+        "inference_ms": 119.4
+      },
+      {
+        "image_file": "images/5_Spodoptera_eridania_adulto/inat_7147727_9203951.jpg",
+        "expected_class": 5,
+        "predicted_classes": [],
+        "hit": false,
+        "other_class_boxes": 0,
+        "inference_ms": 163.5
+      },
+      {
+        "image_file": "images/5_Spodoptera_eridania_adulto/inat_7758571_10188755.jpg",
+        "expected_class": 5,
+        "predicted_classes": [],
+        "hit": false,
+        "other_class_boxes": 0,
+        "inference_ms": 123.4
+      },
+      {
+        "image_file": "images/5_Spodoptera_eridania_adulto/inat_8508154_11354001.jpg",
+        "expected_class": 5,
+        "predicted_classes": [],
+        "hit": false,
+        "other_class_boxes": 0,
+        "inference_ms": 91.3
+      },
+      {
+        "image_file": "images/5_Spodoptera_eridania_adulto/inat_8667423_11610439.jpg",
+        "expected_class": 5,
+        "predicted_classes": [],
+        "hit": false,
+        "other_class_boxes": 0,
+        "inference_ms": 75.7
+      },
+      {
+        "image_file": "images/6_Spodoptera_eridania_larva/inat_103021842_172333823.jpg",
+        "expected_class": 6,
+        "predicted_classes": [
+          2
+        ],
+        "hit": false,
+        "other_class_boxes": 1,
+        "inference_ms": 80.1
+      },
+      {
+        "image_file": "images/6_Spodoptera_eridania_larva/inat_183556833_320256933.jpg",
+        "expected_class": 6,
+        "predicted_classes": [],
+        "hit": false,
+        "other_class_boxes": 0,
+        "inference_ms": 136.9
+      },
+      {
+        "image_file": "images/6_Spodoptera_eridania_larva/inat_64900946_104412251.jpg",
+        "expected_class": 6,
+        "predicted_classes": [],
+        "hit": false,
+        "other_class_boxes": 0,
+        "inference_ms": 87.8
+      },
+      {
+        "image_file": "images/6_Spodoptera_eridania_larva/inat_68272394_110503733.jpg",
+        "expected_class": 6,
+        "predicted_classes": [],
+        "hit": false,
+        "other_class_boxes": 0,
+        "inference_ms": 90.0
+      },
+      {
+        "image_file": "images/6_Spodoptera_eridania_larva/inat_85009842_139793413.jpg",
+        "expected_class": 6,
+        "predicted_classes": [],
+        "hit": false,
+        "other_class_boxes": 0,
+        "inference_ms": 95.9
+      },
+      {
+        "image_file": "images/6_Spodoptera_eridania_larva/inat_872238_1107764.jpg",
+        "expected_class": 6,
+        "predicted_classes": [],
+        "hit": false,
+        "other_class_boxes": 0,
+        "inference_ms": 81.9
+      }
+    ]
+  },
+  "asparagus_context": {
+    "baseline": {
+      "available": true,
+      "images": 24,
+      "images_with_boxes": 2,
+      "boxes": 4,
+      "details": [
+        {
+          "image_file": "images/inat_asparagus_506591768.jpg",
+          "boxes": 1,
+          "classes": [
+            3
+          ]
+        },
+        {
+          "image_file": "images/inat_asparagus_68164712.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_129898024.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_561144553.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_707401010.jpg",
+          "boxes": 3,
+          "classes": [
+            4,
+            4,
+            4
+          ]
+        },
+        {
+          "image_file": "images/inat_asparagus_80663394.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_29478889.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_503507996.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_296637063.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_100940096.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_50560158.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_316072327.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_691023267.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_401856346.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_20906693.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_390604880.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_83844962.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_190115186.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_207240567.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_203988024.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_28499577.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_83844937.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_38293271.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_84971274.jpg",
+          "boxes": 0,
+          "classes": []
+        }
+      ],
+      "warning": "Fotos de espárrago sin revisión de plagas; una caja aquí no demuestra un falso positivo."
+    },
+    "candidate": {
+      "available": true,
+      "images": 24,
+      "images_with_boxes": 1,
+      "boxes": 14,
+      "details": [
+        {
+          "image_file": "images/inat_asparagus_506591768.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_68164712.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_129898024.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_561144553.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_707401010.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_80663394.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_29478889.jpg",
+          "boxes": 14,
+          "classes": [
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4
+          ]
+        },
+        {
+          "image_file": "images/inat_asparagus_503507996.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_296637063.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_100940096.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_50560158.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_316072327.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_691023267.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_401856346.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_20906693.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_390604880.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_83844962.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_190115186.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_207240567.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_203988024.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_28499577.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_83844937.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_38293271.jpg",
+          "boxes": 0,
+          "classes": []
+        },
+        {
+          "image_file": "images/inat_asparagus_84971274.jpg",
+          "boxes": 0,
+          "classes": []
+        }
+      ],
+      "warning": "Fotos de espárrago sin revisión de plagas; una caja aquí no demuestra un falso positivo."
+    }
+  }
+}

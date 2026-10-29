@@ -1,0 +1,14 @@
+{
+  "method": "Umbral 0.30 elegido solo con desarrollo; evaluación reservada a 640 px, sin cajas verificadas.",
+  "thresholds": {
+    "0.30": {
+      "hits": 24,
+      "other_class_boxes": 4
+    },
+    "0.45": {
+      "hits": 21,
+      "other_class_boxes": 4
+    }
+  },
+  "images": 32
+}
