@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#123e32">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>Vigía Espárrago · Inspección de campo</title>
+  <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='accounts.css', v='20261027') }}">
+</head>
+<body>
+  <a class="skip-link" href="#inspeccion">Saltar a la inspección</a>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="AgriTech, módulos">
+      <span class="brand-icon" aria-hidden="true">✳</span>
+      <span><strong>Vigía Espárrago</strong><small>TECNOLOGÍA PARA EL CAMPO</small></span>
+    </a>
+    <div class="top-right"><span class="badge">Prototipo académico</span>{% if agri_user %}<a class="top-login" href="/dashboard">Mi dashboard</a>{% else %}<a class="top-login" href="/login?next=/esparrago">Iniciar sesión</a>{% endif %}</div>
+  </header>
+  <nav class="top-nav" aria-label="Navegación principal">
+    <a href="/">Módulos</a>
+    <a href="/general">Clasificación general</a>
+    <a href="#inspeccion" aria-current="location"><span aria-hidden="true">01</span> Inspección</a>
+    <a href="#resultados"><span aria-hidden="true">02</span> Resultados</a>
+    <a href="#registro"><span aria-hidden="true">03</span> Registrar</a>
+    <a href="#senasa"><span aria-hidden="true">04</span> SENASA</a>
+    <a href="#historial"><span aria-hidden="true">05</span> Historial</a>
+    <a href="/cultivo-3d">Cultivo 3D</a><a href="/planes">Planes</a>
+  </nav>
+  <main id="inicio">
+    <section class="intro" aria-labelledby="pageTitle">
+      <div>
+        <p class="eyebrow">ESPÁRRAGO · INSPECCIÓN FITOSANITARIA</p>
+        <h1 id="pageTitle">Una mirada más precisa <br>para cuidar tu cultivo.</h1>
+        <p>Analiza una imagen, revisa las detecciones y registra lo que encuentres. Tú confirmas cada hallazgo.</p>
+      </div>
+      <ol class="steps" aria-label="Flujo de inspección">
+        <li><span class="step-number">1</span><div><strong>Captura</strong><small>Foto o cámara</small></div></li>
+        <li><span class="step-number">2</span><div><strong>Verifica</strong><small>Revisa cada recuadro</small></div></li>
+        <li><span class="step-number">3</span><div><strong>Registra</strong><small>Conserva la evidencia</small></div></li>
+      </ol>
+    </section>
+
+    <div class="layout">
+      <section class="card viewer-card" id="inspeccion" tabindex="-1" aria-labelledby="inspeccionTitulo">
+        <div class="card-head">
+          <div><p class="eyebrow">01 / CAPTURA</p><h2 id="inspeccionTitulo">Inspeccionar cultivo</h2></div>
+          <span id="livePill" class="status-pill">Listo para comenzar</span>
+        </div>
+        <div class="toolbar" role="group" aria-label="Opciones de captura">
+          <label class="file-btn"><span aria-hidden="true">↑</span> Subir fotografía<input id="photoInput" type="file" accept="image/*" aria-label="Subir fotografía para analizar" aria-describedby="photoHelp"></label>
+          <button id="cameraBtn" class="secondary" type="button">Iniciar cámara</button>
+          <button id="freezeBtn" class="secondary" type="button" disabled>Congelar fotograma</button>
+          <button id="stopBtn" class="quiet" type="button" disabled>Detener</button>
+        </div>
+        <div class="viewport" id="viewport" aria-label="Vista previa de inspección" aria-busy="false">
+          <video id="video" autoplay muted playsinline hidden aria-label="Cámara de inspección"></video>
+          <img id="photo" alt="Fotografía de la inspección actual" hidden>
+          <canvas id="overlay" aria-hidden="true"></canvas>
+          <div class="empty-state" id="emptyState">
+            <span class="empty-icon" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none"><path d="M12 17h7l3-5h9l3 5h5v22H9V17h3Z"/><circle cx="25" cy="27" r="7"/><path d="M8 8v5M5.5 10.5h5"/></svg></span>
+            <strong>Empieza con una imagen del cultivo</strong>
+            <p>Sube una foto nítida o activa la cámara.<br>Acércate a la zona que quieres revisar.</p>
+            <span class="empty-hint" id="photoHelp">Formatos de imagen compatibles · Máximo 10 MB</span>
+          </div>
+          <div class="viewport-meta" id="viewportMeta" hidden><span id="latency">— ms</span><span id="frameState">Esperando fotograma</span></div>
+          <div class="analysis-progress" id="analysisProgress" role="status" aria-live="polite" aria-atomic="true" hidden><span class="spinner" aria-hidden="true"></span><span>Analizando imagen…</span></div>
+        </div>
+        <p id="message" class="message" role="status" aria-live="polite" aria-atomic="true">Puedes comenzar con una foto. Para usar la cámara, permite el acceso en tu navegador.</p>
+        <details class="settings-panel">
+          <summary>Configuración del análisis <span>Confianza y modelo</span></summary>
+          <div class="controls">
+            <div class="control-field">
+              <label for="confidence">Confianza mínima <strong id="confidenceValue">30 %</strong></label>
+              <input id="confidence" type="range" min="10" max="95" value="30" aria-valuetext="30 por ciento" aria-describedby="confidenceHelp">
+              <small id="confidenceHelp">Un umbral bajo muestra más posibles plagas; uno alto exige mayor confianza del detector.</small>
+            </div>
+            <div class="control-field">
+              <label for="modelChoice" class="model-choice-label">Modelo para analizar</label>
+              <select id="modelChoice" aria-describedby="modelHelp"><option value="baseline">YOLOv8n V2 · detector activo</option>{% if candidate_available %}<option value="candidate">YOLO26n · experimento solo fotos</option>{% endif %}</select>
+              <small id="modelHelp">YOLO26 sirve para comparar fotos. Rindió peor que V2 en la prueba externa y no se usa con la cámara.</small>
+            </div>
+          </div>
+        </details>
+        <div class="review-tools" aria-labelledby="reviewTitle">
+          <div class="review-heading"><h3 id="reviewTitle">Revisar recuadros</h3><span class="subtle-tag">Revisión humana</span></div>
+          <p class="muted">Selecciona un recuadro en la imagen o en la lista para corregir su clase o quitarlo. Arrastra la caja para moverla y una esquina para ajustar su tamaño.</p>
+          <div class="review-fields">
+            <div><label for="boxSelection">Recuadro</label><select id="boxSelection" disabled><option value="-1">Primero analiza una imagen</option></select></div>
+            <div><label for="boxClass">Clase de la plaga</label><select id="boxClass" disabled></select></div>
+          </div>
+          <div class="review-actions">
+            <button id="addBoxBtn" class="secondary" type="button" aria-pressed="false" disabled>+ Agregar recuadro</button>
+            <button id="removeBoxBtn" class="quiet danger" type="button" disabled>Quitar seleccionado</button>
+          </div>
+          <p id="reviewHint" class="small muted">Primero analiza una foto o congela un fotograma.</p>
+        </div>
+      </section>
+
+      <aside class="sidebar" aria-label="Resultados de la inspección">
+        <section class="card metrics-card" id="resultados" tabindex="-1" aria-labelledby="resultadosTitulo">
+          <div class="card-head"><div><p class="eyebrow">02 / ANÁLISIS</p><h2 id="resultadosTitulo">Resultados</h2></div><span class="dot" id="resultDot" aria-hidden="true"></span></div>
+          <div class="result-total"><span class="big-number" id="totalCount">—</span><div><strong>objetos detectados</strong><span id="resultSummary">Esperando una imagen</span></div></div>
+          <div id="detections" class="detections"><div class="result-empty"><span aria-hidden="true">◎</span><p>Aquí verás las posibles plagas<br>y la confianza del modelo.</p></div></div>
+          <div class="metrics-row"><div><small>Velocidad observada</small><strong id="fps">— FPS</strong></div><div><small>Modelo del resultado</small><strong id="resultModel">—</strong></div></div>
+          <details class="technical-detail"><summary>Detalle del modelo</summary><p id="modelName">YOLOv8n V2 seleccionado por defecto.</p></details>
+          <a class="next-step" href="#registro">Continuar al registro <span aria-hidden="true">→</span></a>
+        </section>
+        <section class="card alert-card" aria-labelledby="alertTitle">
+          <div class="alert-symbol" aria-hidden="true">!</div><div><p class="eyebrow">VALIDACIÓN EN CAMPO</p><h2 id="alertTitle">Sin alerta activa</h2><p id="alertText">La alerta se activa si la misma clase aparece en varios fotogramas consecutivos.</p></div>
+        </section>
+        <div class="guidance-card"><h3>La última palabra la tienes tú</h3><p>La detección visual orienta la inspección. Confirma la especie en campo antes de tomar una medida.</p><a href="#senasa">Consultar la fuente oficial <span aria-hidden="true">↗</span></a></div>
+      </aside>
+    </div>
+
+    <section class="card record-card" id="registro" tabindex="-1" aria-labelledby="registroTitulo">
+      <div class="card-head"><div><p class="eyebrow">03 / TRAZABILIDAD</p><h2 id="registroTitulo">Registrar hallazgo</h2></div><span class="subtle-tag">Revisión del supervisor</span></div>
+      <p class="section-description">Añade el contexto de la inspección. Guarda como pendiente si aún necesitas verificar la identificación.</p>
+      <div class="record-layout">
+        <div class="record-grid">
+          <div class="field"><label for="sector">Sector o lote <span class="required-label">obligatorio</span></label><input id="sector" type="text" required autocomplete="off" placeholder="Ej. Lote norte · Hilera 12" maxlength="100" aria-describedby="sectorError"><span id="sectorError" class="field-error" hidden>Indica el sector o lote antes de guardar.</span></div>
+          <div class="field"><label for="reviewStatus">Estado de revisión</label><select id="reviewStatus" aria-describedby="reviewStatusHelp"><option value="pendiente">Pendiente de revisión</option><option value="confirmado">Confirmado</option><option value="falso_positivo">Falso positivo</option></select><small id="reviewStatusHelp">Para confirmar, revisa la captura y marca la casilla de verificación.</small></div>
+          <div class="field field-wide"><label for="observations">Observaciones <span class="optional">opcional</span></label><textarea id="observations" rows="3" placeholder="Describe la condición de la planta, el daño o el contexto de la inspección…" maxlength="500"></textarea></div>
+          <div class="location-field field-wide"><button id="locationBtn" class="secondary" type="button">Añadir ubicación</button><p id="locationStatus" class="small muted" role="status">Opcional. Puedes guardar el hallazgo sin compartir tu ubicación.</p></div>
+        </div>
+        <div class="record-checklist">
+          <h3>Antes de guardar</h3>
+          <p>Comprueba la imagen, la clase y cada recuadro de la captura.</p>
+          <label class="review-confirm"><input id="reviewed" type="checkbox"><span>He revisado la imagen y todos los recuadros.</span></label>
+          <p class="small muted">Solo los hallazgos confirmados y revisados se incluyen al exportar etiquetas.</p>
+          <button id="saveBtn" class="primary full" type="button" aria-describedby="saveHelp" disabled>Guardar hallazgo</button>
+          <p id="saveHelp" class="small muted">Primero analiza una foto o un fotograma.</p>
+          <p id="saveMessage" class="inline-message" role="status" aria-live="polite" aria-atomic="true"></p>
+        </div>
+      </div>
+      <p class="privacy-note"><strong>Registro privado.</strong> Para guardar y consultar hallazgos inicia sesión. La foto, el lote y la ubicación solo serán visibles en tu cuenta. Los registros antiguos sin propietario permanecen fuera de las cuentas nuevas.</p>
+    </section>
+
+    <section class="card senasa-card" id="senasa" tabindex="-1" aria-labelledby="senasaTitle">
+      <div class="senasa-intro"><p class="eyebrow">04 / SIGIA · SENASA</p><h2 id="senasaTitle">Información para decidir mejor</h2><p class="section-description">Consulta la ficha oficial para espárrago de una plaga detectada. Verifica siempre la vigencia del registro y la etiqueta.</p><a href="{{ sigia_url }}" target="_blank" rel="noopener">Abrir portal SIGIA <span aria-hidden="true">↗</span><span class="sr-only"> (nueva pestaña)</span></a></div>
+      <div class="senasa-controls"><label for="senasaClass">Plaga detectada</label><select id="senasaClass" aria-describedby="senasaHelp"><option value="">Selecciona una plaga</option></select><p class="small muted" id="senasaHelp">Las opciones aparecen al analizar una imagen con detecciones.</p><button id="senasaBtn" class="secondary full" type="button" disabled>Consultar SIGIA</button><div id="senasaResult" class="senasa-result" role="status" aria-live="polite">La consulta puede tardar unos instantes. Puedes continuar revisando la inspección.</div></div>
+    </section>
+    <section id="productsCard" class="card products-card" hidden aria-labelledby="productsTitle">
+      <div class="card-head"><div><p class="eyebrow">REPORTE OFICIAL</p><h2 id="productsTitle">Productos del reporte SIGIA</h2></div><strong id="productsCount" class="subtle-tag"></strong></div>
+      <p class="muted">Listado extraído del PDF para espárrago. Verifica el registro vigente, la etiqueta y la indicación de un profesional antes de tomar cualquier medida.</p>
+      <label for="productSearch">Filtrar productos</label><input id="productSearch" type="search" placeholder="Producto, ingrediente o número de registro">
+      <p class="small muted" id="productsScrollHelp">En pantallas pequeñas, desplaza la tabla horizontalmente para ver todas las columnas.</p>
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Productos SIGIA; tabla desplazable" aria-describedby="productsScrollHelp"><table><caption class="sr-only">Productos registrados en el reporte de SENASA</caption><thead><tr><th scope="col">Registro</th><th scope="col">Producto</th><th scope="col">Ingrediente activo</th><th scope="col">Clase</th><th scope="col"><abbr title="Periodo de carencia">PC</abbr></th><th scope="col"><abbr title="Límite máximo de residuos">LMR</abbr></th></tr></thead><tbody id="productsBody"></tbody></table></div>
+      <p id="productsShown" class="muted small" role="status"></p>
+    </section>
+
+    <section class="card history-card" id="historial" tabindex="-1" aria-labelledby="historyTitle">
+      <div class="card-head history-head"><div><p class="eyebrow">05 / SEGUIMIENTO</p><h2 id="historyTitle">Historial de inspecciones</h2></div><div class="history-actions"><button id="refreshBtn" class="quiet" type="button">Actualizar</button><a class="secondary" href="/api/dataset/export">Exportar confirmados <span aria-hidden="true">↓</span></a></div></div>
+      <p class="section-description">Consulta únicamente los registros de tu cuenta y su estado de revisión. <a href="/dashboard">Abrir dashboard</a>.</p>
+      <p id="historyMessage" class="small muted" role="status">Cargando historial…</p>
+      <div id="history" class="history"><p class="muted">Aún no hay hallazgos guardados.</p></div>
+    </section>
+
+    <details id="comparisonCard" class="card comparison-card" hidden>
+      <summary><span><span class="eyebrow">TRANSPARENCIA DEL MODELO</span><strong>Resultados de la evaluación externa</strong></span><span class="summary-hint">Ver evidencia</span></summary>
+      <div class="details-content">
+        <p class="muted">La cifra indica si apareció la clase esperada en la foto, con confianza mínima 25 % e imagen de 512 px. No mide la calidad de la caja ni confirma el desempeño en campos de espárrago.</p>
+        <div class="comparison-grid"><div><small>YOLOv8n V2</small><strong id="baselineHits">—</strong><span id="baselineExtra">—</span></div><div><small>YOLO26n experimental</small><strong id="candidateHits">—</strong><span id="candidateExtra">—</span></div></div>
+        <div class="table-wrap" tabindex="0" role="region" aria-label="Evaluación por clase; tabla desplazable"><table class="comparison-table"><caption class="sr-only">Fotografías con la clase esperada por modelo</caption><thead><tr><th scope="col">Clase</th><th scope="col">V2</th><th scope="col">YOLO26</th></tr></thead><tbody id="comparisonBody"></tbody></table></div>
+        <p class="muted small">Las fotos externas no tienen cajas verificadas ni hospedero espárrago confirmado. La selección para uso principal requiere una prueba de campo independiente. “Sin datos” significa que no hubo fotografías externas de esa clase.</p>
+        <details class="how-it-works"><summary>Cómo decide YOLO qué mostrar</summary><p>YOLO propone una caja, una clase y una confianza para cada objeto. Se muestran las propuestas que superan el umbral elegido; los recuadros superpuestos se filtran durante la inferencia. En cámara, la alerta aparece cuando una misma clase coincide en varios fotogramas. La persona revisa o corrige el resultado antes de confirmarlo.</p></details>
+      </div>
+    </details>
+  </main>
+  <footer><strong>Vigía Espárrago</strong><span>Prototipo académico · La tecnología acompaña. La verificación en campo decide.</span><a href="#inicio">Volver al inicio ↑</a></footer>
+  <script>window.PEST_CLASSES = {{ class_names|tojson }}; window.AGRI_LOGGED_IN = {{ (agri_user is not none)|tojson }};</script>
+  <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+</body>
+</html>

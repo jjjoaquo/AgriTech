@@ -1,0 +1,52 @@
+{% extends "base_account.html" %}
+{% block title %}Mi dashboard · AgriTech{% endblock %}
+{% block content %}
+<section class="account-heading"><div><p class="eyebrow">MI CULTIVO / DATOS PRIVADOS</p><h1>Tu dashboard de inspección</h1><p>Resumen de los hallazgos que registraste con tu cuenta. Las predicciones requieren verificación en campo.</p></div><a class="account-primary" href="/esparrago">Nueva inspección ↗</a></section>
+<section class="stat-grid" aria-label="Indicadores de inspección">
+  <article class="stat-card"><span>Hallazgos guardados</span><strong>{{ total }}</strong><small>Solo los de tu cuenta</small></article>
+  <article class="stat-card"><span>Confirmados</span><strong>{{ statuses.get('confirmado', 0) }}</strong><small>Tras revisión humana</small></article>
+  <article class="stat-card"><span>Pendientes</span><strong>{{ statuses.get('pendiente', 0) }}</strong><small>Por revisar en campo</small></article>
+  <article class="stat-card"><span>Uso de {{ plans[agri_user.plan].name }}</span><strong>{{ usage }} / {{ limit }}</strong><small>Registros de este mes · <a href="/planes">Ver planes</a></small></article>
+</section>
+<div class="dashboard-grid">
+  <section class="account-card"><div class="section-row"><div><p class="eyebrow">INSIGHTS / ÚLTIMAS 100 INSPECCIONES</p><h2>Clases registradas con más frecuencia</h2></div><a href="/cultivo-3d">Explorar cultivo 3D ↗</a></div>
+    {% if top_classes %}<ol class="insight-list">{% for name, count in top_classes %}<li><span>{{ name }}</span><strong>{{ count }}</strong></li>{% endfor %}</ol>
+    {% else %}<p class="muted">Cuando guardes inspecciones, verás aquí las clases observadas. Este resumen no es una estimación de incidencia de toda la parcela.</p>{% endif %}
+  </section>
+  <section class="account-card"><p class="eyebrow">PLAN Y SOLICITUDES</p><h2>Tu acceso</h2><p>Plan actual: <strong>{{ plans[agri_user.plan].name }}</strong>. La clasificación y la cámara están disponibles; la cuota se aplica a los hallazgos guardados.</p>
+    {% if plan_requests %}<ul class="request-list">{% for item in plan_requests %}<li>{{ plans[item.plan].name }} · {{ item.status }} <small>{{ item.created_at[:10] }}</small></li>{% endfor %}</ul>{% endif %}
+    <a class="account-secondary" href="/planes">Comparar los tres planes</a>
+  </section>
+</div>
+<section class="account-card dashboard-trend" aria-labelledby="trend-title">
+  <p class="eyebrow">EVOLUCIÓN / MUESTRA DE INSPECCIONES RECIENTES</p>
+  <h2 id="trend-title">Hallazgos por día</h2>
+  <p class="muted small">Recuento de los hallazgos recientes cargados en esta página, agrupados por fecha UTC. No representa necesariamente el historial completo ni la incidencia de la parcela.</p>
+  {% if findings %}
+  <div id="trendBars" class="trend-bars" role="img" aria-label="Hallazgos recientes agrupados por fecha"></div>
+  <script type="application/json" id="trendDates">{{ findings | map(attribute='created_at') | list | tojson }}</script>
+  {% else %}<p class="muted">Registra inspecciones para visualizar su evolución.</p>{% endif %}
+</section>
+{% if findings %}
+<script>
+(function(){
+  const values=JSON.parse(document.getElementById('trendDates').textContent).map(v=>String(v).slice(0,10));
+  const counts=new Map();for(const day of values)counts.set(day,(counts.get(day)||0)+1);
+  const days=[...counts.keys()].sort().slice(-7);const max=Math.max(1,...days.map(day=>counts.get(day)));
+  const chart=document.getElementById('trendBars');
+  chart.setAttribute('aria-label',days.map(day=>day+': '+counts.get(day)+' hallazgo(s)').join('; '));
+  for(const day of days){
+    const item=document.createElement('div');item.className='trend-day';
+    const bar=document.createElement('span');bar.className='trend-bar';bar.style.height=(12+88*counts.get(day)/max)+'%';
+    const count=document.createElement('strong');count.textContent=String(counts.get(day));
+    const label=document.createElement('small');label.textContent=day.slice(5);
+    item.append(count,bar,label);chart.append(item);
+  }
+})();
+</script>
+{% endif %}
+<section class="account-card"><div class="section-row"><div><p class="eyebrow">TRAZABILIDAD</p><h2>Inspecciones recientes</h2></div>{% if agri_user.plan == 'gratis' %}<a href="/planes">Activar exportación ↗</a>{% else %}<a href="/api/dataset/export">Exportar confirmados ↗</a>{% endif %}</div>
+  {% if findings %}<div class="dashboard-findings">{% for item in findings %}<article><img src="{{ url_for('finding_image', finding_id=item.id) }}" alt="Captura de {{ item.sector }}" loading="lazy"><div><strong>{{ item.sector }}</strong><small>{{ item.created_at[:16].replace('T', ' ') }} UTC</small><span class="history-status" data-status="{{ item.status }}">{{ item.status.replace('_', ' ') }}</span></div></article>{% endfor %}</div>
+  {% else %}<p class="muted">Aún no tienes hallazgos. Puedes analizar una imagen antes de guardarla.</p>{% endif %}
+</section>
+{% endblock %}

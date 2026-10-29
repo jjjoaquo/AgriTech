@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#123e32">
+  <title>AgriTech · Clasificación general</title>
+  <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='accounts.css', v='20261027') }}">
+</head>
+<body>
+  <a class="skip-link" href="#analisis">Saltar al análisis</a>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="AgriTech, inicio"><span class="brand-icon" aria-hidden="true">✳</span><span><strong>AgriTech</strong><small>PLAGAS EN CULTIVOS</small></span></a>
+    <div class="top-right"><span class="badge">MVP académico</span>{% if agri_user %}<a class="top-login" href="/dashboard">Mi dashboard</a>{% else %}<a class="top-login" href="/login">Iniciar sesión</a>{% endif %}</div>
+  </header>
+  <nav class="top-nav" aria-label="Módulos"><a href="/">Inicio</a><a href="/general" aria-current="page">Clasificación general</a><a href="/esparrago">YOLO · Espárrago</a><a href="/cultivo-3d">Cultivo 3D</a><a href="/planes">Planes</a></nav>
+  <main>
+    <section class="intro" aria-labelledby="general-title">
+      <div>
+        <p class="eyebrow">VARIOS CULTIVOS · 102 CLASES</p>
+        <h1 id="general-title">Una foto, posibles <br>clases de plaga.</h1>
+        <p>Acércate a la plaga y sube una fotografía nítida. Este modelo clasifica la imagen completa. Para recuadros y cámara usa la inspección de espárrago.</p>
+      </div>
+      <ol class="steps" aria-label="Flujo de clasificación">
+        <li><span class="step-number">1</span><div><strong>Sube</strong><small>Fotografía cercana</small></div></li>
+        <li><span class="step-number">2</span><div><strong>Compara</strong><small>Tres hipótesis</small></div></li>
+        <li><span class="step-number">3</span><div><strong>Verifica</strong><small>Confirma en campo</small></div></li>
+      </ol>
+    </section>
+    <div class="general-layout">
+      <section id="analisis" class="card" aria-labelledby="image-title">
+        <div class="card-head"><div><p class="eyebrow">01 / FOTOGRAFÍA</p><h2 id="image-title">Imagen para clasificar</h2></div><span class="subtle-tag">ResNet‑152</span></div>
+        <label class="file-btn general-upload" for="generalImage">Seleccionar fotografía<input id="generalImage" type="file" accept="image/*" aria-describedby="generalHelp"></label>
+        <p id="generalHelp" class="small muted">JPG o PNG, hasta 10 MB. Acerca la plaga; una foto muy amplia puede confundir al clasificador.</p>
+        <div class="general-preview" id="generalPreview"><span id="generalEmpty">La fotografía aparecerá aquí.</span><img id="generalPhoto" alt="Fotografía seleccionada para clasificar" hidden></div>
+        <button id="classifyBtn" class="primary" type="button" data-available="{{ 'true' if classifier_available else 'false' }}" disabled>Clasificar fotografía</button>
+        <p id="classifyMessage" class="inline-message" role="status" aria-live="polite">{% if classifier_available %}Selecciona una foto para comenzar.{% else %}El peso ResNet aún no está instalado en este servidor.{% endif %}</p>
+      </section>
+      <aside class="card" aria-labelledby="general-results-title">
+        <div class="card-head"><div><p class="eyebrow">02 / RESULTADO</p><h2 id="general-results-title">Posibles clases</h2></div></div>
+        <p id="generalResultHint" class="muted">Esperando fotografía.</p>
+        <ol id="generalResults" class="general-results" aria-live="polite"></ol>
+        <p id="generalTime" class="small muted"></p>
+        <div class="general-caution"><strong>Revisión necesaria.</strong> El modelo siempre propone alguna de sus 102 clases, incluso si la foto no contiene una plaga conocida. Los porcentajes no son certeza ni diagnóstico. Esta versión no localiza objetos, no determina el cultivo y no consulta SENASA para estas clases.</div>
+      </aside>
+    </div>
+    <p class="portal-note"><strong>Estado del modelo.</strong> {% if classifier_variant == 'balanced' %}Se usa el peso reentrenado con IP102 balanceado, con 102 clases.{% else %}Se usa el peso no balanceado que entregó Alonso, con 102 clases. El ZIP balanceado aún no se publica como modelo.{% endif %} El preprocesamiento usa normalización ImageNet y {{ image_size }} × {{ image_size }} px. No se usa este resultado para recomendar tratamientos.</p>
+  </main>
+  <footer><strong>AgriTech</strong><span>Clasificación experimental · Verifica con un especialista.</span><a href="/">Volver al inicio ↑</a></footer>
+  <script src="{{ url_for('static', filename='general.js') }}" defer></script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#123e32">
+  <title>AgriTech · Inspección de plagas</title>
+  <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css', v='20261026-portal') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='accounts.css', v='20261027') }}">
+</head>
+<body class="portal-page">
+  <a class="skip-link" href="#modulos">Saltar a los módulos</a>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="AgriTech, inicio"><span class="brand-icon" aria-hidden="true">✳</span><span><strong>AgriTech</strong><small>INSPECCIÓN FITOSANITARIA</small></span></a>
+    <div class="top-right"><span class="badge">MVP académico</span>{% if agri_user %}<a class="top-login" href="/dashboard">Mi dashboard</a>{% else %}<a class="top-login" href="/login">Iniciar sesión</a>{% endif %}</div>
+  </header>
+  <nav class="top-nav" aria-label="Navegación principal">
+    <a href="#modulos" aria-current="location"><span aria-hidden="true">01</span> Módulos</a>
+    <a href="/general"><span aria-hidden="true">02</span> Clasificación general</a>
+    <a href="/esparrago"><span aria-hidden="true">03</span> Inspección con YOLO</a>
+    <a href="/cultivo-3d"><span aria-hidden="true">04</span> Cultivo 3D</a>
+    <a href="#planes"><span aria-hidden="true">05</span> Planes</a>
+  </nav>
+  <main id="inicio">
+    <section class="portal-hero" aria-labelledby="portal-title">
+      <div class="portal-hero-copy">
+        <p class="eyebrow">AGRITECH / INSPECCIÓN FITOSANITARIA</p>
+        <h1 id="portal-title">Observa el cultivo.<br><em>Decide con evidencia.</em></h1>
+        <p>Dos herramientas para revisar fotografías de plagas. Empieza con una imagen, examina el resultado y confirma el hallazgo en campo.</p>
+        <a class="portal-hero-link" href="#modulos">Elegir herramienta <span aria-hidden="true">↘</span></a>
+      </div>
+      <div class="portal-hero-visual" aria-hidden="true">
+        <span class="hero-visual-tag">FLUJO DE INSPECCIÓN</span>
+        <span class="hero-visual-frame"><span class="hero-visual-focus"></span></span>
+        <span class="hero-visual-caption">FOTO <span>→</span> ANÁLISIS <span>→</span> REVISIÓN</span>
+      </div>
+    </section>
+    <div class="portal-section-heading"><div><p class="eyebrow">01 / HERRAMIENTAS</p><h2>¿Qué necesitas analizar?</h2></div><p>Selecciona el módulo según la imagen que tengas.</p></div>
+    <section id="modulos" class="portal-grid" aria-label="Módulos disponibles">
+      <article class="module-card module-general">
+        <div class="module-icon" aria-hidden="true">◉</div>
+        <span class="eyebrow">VARIOS CULTIVOS · CLASIFICACIÓN</span>
+        <h2>Clasificación general de plagas</h2>
+        <p>Sube una foto cercana de la plaga. ResNet‑152 muestra tres posibles clases entre 102 categorías para la imagen completa.</p>
+        <div class="module-illustration general-illustration" aria-hidden="true"><span>FOTOGRAFÍA</span><div class="illustration-picture">✳</div><div class="illustration-lines"><i></i><i></i><i></i></div></div>
+        <div class="module-meta"><span>Foto</span><span>102 clases</span><span>Sin recuadros</span></div>
+        <a class="module-action" href="/general">Abrir clasificación general <span aria-hidden="true">↗</span></a>
+        {% if not classifier_available %}<p class="small muted">El peso ResNet aún no está instalado en este servidor.</p>{% endif %}
+      </article>
+      <article class="module-card module-yolo">
+        <div class="module-icon" aria-hidden="true">⌗</div>
+        <span class="eyebrow">ESPÁRRAGO · DETECCIÓN LOCALIZADA</span>
+        <h2>Inspección localizada con YOLO</h2>
+        <p>Analiza una foto o la cámara, ve cajas y datos sobre la imagen, corrige resultados, registra hallazgos y consulta SIGIA–SENASA para espárrago.</p>
+        <div class="module-illustration yolo-illustration" aria-hidden="true"><span>VISTA DE DETECCIÓN</span><div class="illustration-picture">✳<i></i></div><div class="illustration-lines"><i></i><i></i></div></div>
+        <div class="module-meta"><span>Foto o cámara</span><span>7 clases</span><span>Recuadros</span></div>
+        <a class="module-action" href="/esparrago">Abrir inspección con YOLO <span aria-hidden="true">↗</span></a>
+      </article>
+    </section>
+    <div class="portal-process" aria-label="Pasos de inspección"><div><span>01</span><strong>Captura</strong><small>Sube una foto o usa la cámara en YOLO.</small></div><div><span>02</span><strong>Revisa</strong><small>Lee la clase sugerida o los recuadros.</small></div><div><span>03</span><strong>Confirma</strong><small>Verifica el resultado en campo.</small></div></div>
+    <section class="landing-plan-section" id="planes" aria-labelledby="planes-title">
+      <div class="portal-section-heading"><div><p class="eyebrow">02 / PLANES</p><h2 id="planes-title">Del primer análisis a una campaña completa</h2></div><p>La cuota cuenta hallazgos guardados, no fotogramas de cámara.</p></div>
+      <div class="plans-grid">
+        <article class="plan-card"><p class="eyebrow">EMPIEZA GRATIS</p><h2>Explorar</h2><p class="plan-price">Gratis</p><p>Para probar el flujo en una cuenta propia.</p><ul><li>10 hallazgos al mes</li><li>YOLO, cámara y clasificación</li><li>Dashboard privado</li></ul><a class="account-secondary" href="{% if agri_user %}/dashboard{% else %}/registro{% endif %}">{% if agri_user %}Entrar al dashboard{% else %}Crear cuenta gratuita{% endif %}</a></article>
+        <article class="plan-card featured"><span class="plan-popular">MÁS CAPACIDAD</span><p class="eyebrow">PARA USO FRECUENTE</p><h2>Campo Pro</h2><p class="plan-price">Solicita propuesta</p><p>Para registrar inspecciones durante la campaña.</p><ul><li>200 hallazgos al mes</li><li>Historial privado</li><li>Exportación de confirmados</li></ul><a class="account-primary" href="/planes?plan=pro#solicitar-plan">Solicitar Campo Pro</a></article>
+        <article class="plan-card"><p class="eyebrow">MAYOR VOLUMEN</p><h2>Cooperativa</h2><p class="plan-price">Cotización</p><p>Para más inspecciones en una cuenta institucional.</p><ul><li>1000 hallazgos al mes</li><li>Dashboard e historial</li><li>Revisión comercial</li></ul><a class="account-secondary" href="/planes?plan=cooperativa#solicitar-plan">Solicitar contacto</a></article>
+      </div>
+      <p class="plan-disclaimer">Propuestas del MVP académico. No hay pagos ni suscripciones activas; el superadmin revisa cada solicitud.</p>
+    </section>
+    <p class="portal-note"><strong>Alcance actual.</strong> {% if classifier_variant == 'balanced' %}El clasificador general usa un peso reentrenado con IP102 balanceado y entrada de 256 × 256 px.{% else %}El clasificador general usa el peso no balanceado entregado por Alonso y entrada de 256 × 256 px. El ZIP balanceado aún no está publicado como modelo en este sitio.{% endif %} YOLO realiza la detección localizada en espárrago. SENASA es una fuente de consulta, no una validación automática del modelo.</p>
+  </main>
+  <footer><strong>AgriTech</strong><span>Prototipo académico · La revisión humana decide.</span><a href="#modulos">Volver a los módulos ↑</a></footer>
+</body>
+</html>
