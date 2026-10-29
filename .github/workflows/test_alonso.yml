@@ -1,0 +1,65 @@
+name: Test Suite CI
+
+on:
+  push:
+    branches: [ "main", "dev" ]
+  pull_request:
+    branches: [ "main", "dev" ]
+
+jobs:
+  test-python:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip' # Acelera la instalación de dependencias
+
+      - name: Instalar dependencias de Python
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f mvp/requirements.txt ]; then pip install -r mvp/requirements.txt; fi
+          pip install pytest flake8
+
+      - name: Linter con Flake8 (opcional / buenas prácticas)
+        run: |
+          # Detiene la ejecución si hay errores de sintaxis
+          flake8 mvp/ --count --select=E9,F63,F7,F82 --show-source --statistics
+
+      - name: Ejecutar pruebas unitarias de Python
+        run: |
+          # Ejecuta pytest sobre tu suite de pruebas
+          pytest
+  test-php:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar entorno PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, pdo, pdo_mysql, curl
+          coverage: none
+
+      - name: Instalar dependencias con Composer
+        run: |
+          if [ -f composer.json ]; then
+            composer validate --strict
+            composer install --prefer-dist --no-progress
+          fi
+
+      - name: Ejecutar pruebas de PHP (PHPUnit)
+        run: |
+          # Si usas PHPUnit vía vendor o global
+          if [ -f vendor/bin/phpunit ]; then
+            vendor/bin/phpunit
+          else
+            echo "Sin suite de PHPUnit configurada, validando sintaxis básica..."
+            find . -name "*.php" ! -path "./vendor/*" -exec php -l {} +
+          fi
