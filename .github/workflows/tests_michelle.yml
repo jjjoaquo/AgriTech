@@ -1,0 +1,41 @@
+name: Pruebas AgriTech - Michelle
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: mvp
+    steps:
+      - name: Descargar codigo
+        uses: actions/checkout@v4
+      - name: Preparar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Instalar dependencias de pruebas
+        run: python -m pip install 'Flask>=3.0,<4' 'Pillow>=10' 'pypdf>=4'
+      - name: Pruebas unitarias SCRUM-10 a SCRUM-13
+        run: |
+          mkdir -p test-results
+          set -o pipefail
+          python -m unittest discover -s tests -v 2>&1 | tee test-results/unitarias.txt
+      - name: Prueba funcional SCRUM-84 y SCRUM-90
+        run: |
+          mkdir -p test-results
+          set -o pipefail
+          python smoke_test.py 2>&1 | tee test-results/funcionales.txt
+      - name: Conservar resultados
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: resultados-pruebas-michelle
+          path: mvp/test-results/
+          if-no-files-found: warn

@@ -8,6 +8,7 @@ import re
 import tempfile
 import zipfile
 from pathlib import Path
+from unittest.mock import MagicMock
 
 from PIL import Image
 
@@ -15,6 +16,20 @@ import app as project
 
 
 def main() -> None:
+    simulated_detector = not project.MODEL_PATH.is_file()
+    if simulated_detector:
+        # El repositorio no almacena el peso YOLO; CI verifica el flujo HTTP
+        # con la misma estructura de salida que entrega el detector.
+        box = MagicMock()
+        box.cls.item.return_value = 0
+        box.conf.item.return_value = 0.875
+        box.xyxy[0].tolist.return_value = [20, 30, 100, 140]
+        result = MagicMock()
+        result.boxes = [box]
+        result.names = {0: project.CLASS_NAMES[0]}
+        model = MagicMock()
+        model.predict.return_value = [result]
+        project.get_model = lambda _key="baseline": model
     with tempfile.TemporaryDirectory() as directory:
         root = Path(directory)
         project.DATA_DIR = root
@@ -127,7 +142,8 @@ def main() -> None:
             assert label.startswith("0 ")
             assert saved.json["id"] in archive.read("manifest.json").decode()
         assert other.get("/api/hallazgos").json == []
-        print("OK: YOLO, registro, aislamiento, CSRF, cuota, planes, superadmin y exportación privada")
+        detector_label = "YOLO simulado" if simulated_detector else "YOLO real"
+        print(f"OK: {detector_label}, registro, aislamiento, CSRF, cuota, planes, superadmin y exportación privada")
 
 
 if __name__ == "__main__":
