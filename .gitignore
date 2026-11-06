@@ -22,3 +22,4 @@ mvp/training_runs/**/*.tmp
 mvp/training_runs/*_smoke/
 mvp/training_runs/*.log
 mvp/models/*.pth
+.agents/
