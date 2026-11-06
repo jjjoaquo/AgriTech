@@ -69,6 +69,8 @@ class TestAlonsoHistoriasUsuario(unittest.TestCase):
             "csrf_token": token,
         })
         self.assertEqual(resp.status_code, 302)
+        dash_resp = client.get("/dashboard")
+        self.assertEqual(dash_resp.status_code, 200)
         if plan != "gratis":
             with project.db_connection() as con:
                 con.execute("UPDATE users SET plan=? WHERE email=?", (plan, email))
@@ -229,13 +231,13 @@ class TestAlonsoHistoriasUsuario(unittest.TestCase):
         try:
             project.get_model = lambda _key="baseline": mock_model
 
-            img_bytes = io.BytesIO()
-            Image.new("RGB", (100, 100)).save(img_bytes, "JPEG")
-            img_bytes.seek(0)
+            buf = io.BytesIO()
+            Image.new("RGB", (100, 100)).save(buf, "JPEG")
+            raw_bytes = buf.getvalue()
 
             # Umbral válido por defecto (0.30 para control de sensibilidad en campo)
             resp = self.client.post("/api/detect", data={
-                "image": (img_bytes, "test.jpg"),
+                "image": (io.BytesIO(raw_bytes), "test.jpg"),
                 "confidence": "0.30",
                 "model": "baseline"
             })
@@ -244,9 +246,8 @@ class TestAlonsoHistoriasUsuario(unittest.TestCase):
             self.assertEqual(data["detections"][0]["class_name"], "prodiplosis longifila larva")
 
             # Umbral fuera de rango debe fallar (menor a 0.10 o mayor a 0.95)
-            img_bytes.seek(0)
             resp_invalido = self.client.post("/api/detect", data={
-                "image": (img_bytes, "test.jpg"),
+                "image": (io.BytesIO(raw_bytes), "test.jpg"),
                 "confidence": "0.05",
             })
             self.assertEqual(resp_invalido.status_code, 400)
