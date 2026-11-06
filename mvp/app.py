@@ -23,6 +23,7 @@ from PIL import Image, ImageOps, UnidentifiedImageError
 from pypdf import PdfReader
 
 import general_classifier
+import pdf_processor
 from accounts import Accounts, PLANS, init_tables
 from senasa import MAPEO_PLAGAS, SIGIA_URL, consultar_sigia, extraer_productos
 
@@ -186,6 +187,154 @@ def create_app():
         classes = Counter(d["class_name"] for row in rows for d in json.loads(row["detections_json"]))
         return jsonify(inspections=totals["total"], confirmed=totals["confirmed"] or 0,
                        recent_class_counts=dict(classes.most_common(5)), source="inspecciones_propias")
+
+    @app.post("/api/cultivo/analizar-pdf")
+    def analyze_cultivo_pdf():
+        user, response = auth.require_api_user()
+        if response:
+            return response
+        auth.require_csrf()
+        file = request.files.get("reporte") or request.files.get("file")
+        if file is None or not file.filename:
+            return jsonify(error="Selecciona un archivo PDF con el reporte de campo."), 400
+
+        try:
+            confidence = float(request.form.get("confidence", "0.30"))
+            if not 0.1 <= confidence <= 0.95:
+                raise ValueError()
+        except (TypeError, ValueError):
+            return jsonify(error="La confianza debe ser un número entre 0.10 y 0.95."), 400
+
+        try:
+            pdf_bytes = file.read(pdf_processor.MAX_PDF_BYTES + 1)
+            images = pdf_processor.extract_images_from_pdf(pdf_bytes)
+        except ValueError as exc:
+            return jsonify(error=str(exc)), 400
+        except Exception:
+            app.logger.exception("Error al extraer imágenes del PDF")
+            return jsonify(error="No se pudo procesar el archivo PDF."), 400
+
+        with db_connection() as con:
+            plan_row = con.execute("SELECT plan FROM users WHERE id=? AND active=1", (user["id"],)).fetchone()
+            if plan_row:
+                limit = PLANS[plan_row["plan"]]["limit"]
+                used = auth.usage(con, user["id"])
+                if user["role"] != "superadmin" and used >= limit:
+                    return jsonify(error=f"Alcanzaste el límite mensual de tu plan ({limit} inspecciones).", upgrade_url="/planes"), 429
+
+        start = time.perf_counter()
+        num_images = len(images)
+        cols = 3 if num_images <= 6 else (4 if num_images <= 12 else 5)
+        rows = math.ceil(num_images / cols)
+
+        plants = []
+        pests_counter = Counter()
+
+        for idx, img in enumerate(images):
+            pred = predict_image(img, confidence=confidence, model_key="baseline")
+            dets = pred["detections"]
+            for d in dets:
+                pests_counter[d["class_name"]] += 1
+
+            status = "alerta" if len(dets) > 0 else "limpio"
+            data_url = pdf_processor.image_to_base64_data_url(img)
+
+            plants.append({
+                "id": idx + 1,
+                "row": idx // cols,
+                "col": idx % cols,
+                "status": status,
+                "detections": dets,
+                "counts": pred["counts"],
+                "width": pred["width"],
+                "height": pred["height"],
+                "image": data_url,
+            })
+
+        healthy_count = sum(1 for p in plants if p["status"] == "limpio")
+        infested_count = sum(1 for p in plants if p["status"] == "alerta")
+
+        return jsonify({
+            "success": True,
+            "filename": Path(file.filename).name,
+            "total_plants": num_images,
+            "healthy_count": healthy_count,
+            "infested_count": infested_count,
+            "grid": {"rows": rows, "cols": cols},
+            "pests_summary": dict(pests_counter),
+            "plants": plants,
+            "elapsed_ms": round((time.perf_counter() - start) * 1000),
+        })
+
+    @app.post("/api/cultivo/guardar-lote")
+    def save_batch():
+        user, response = auth.require_api_user()
+        if response:
+            return response
+        auth.require_csrf()
+        body = request.get_json(silent=True) or {}
+        if not isinstance(body, dict):
+            return jsonify(error="El cuerpo debe ser un objeto JSON."), 400
+        sector = str(body.get("sector", "Lote 3D - Reporte PDF")).strip()[:100] or "Lote 3D - Reporte PDF"
+        plants = body.get("plants", [])
+        if not isinstance(plants, list) or not plants:
+            return jsonify(error="No se enviaron plantas para guardar."), 400
+        if len(plants) > 50:
+            return jsonify(error="El lote excede el límite de 50 registros."), 400
+
+        IMAGE_DIR.mkdir(parents=True, exist_ok=True)
+        saved_count = 0
+        now_str = datetime.now(timezone.utc).isoformat()
+
+        try:
+            with db_connection() as con:
+                con.execute("BEGIN IMMEDIATE")
+                plan_row = con.execute("SELECT plan FROM users WHERE id=? AND active=1", (user["id"],)).fetchone()
+                if plan_row is None:
+                    return jsonify(error="Tu sesión ya no está activa."), 401
+                limit = PLANS[plan_row["plan"]]["limit"]
+
+                for plant in plants:
+                    if user["role"] != "superadmin" and auth.usage(con, user["id"]) >= limit:
+                        break
+                    data_url = plant.get("image", "")
+                    if not isinstance(data_url, str) or "," not in data_url:
+                        continue
+                    try:
+                        raw = base64.b64decode(data_url.split(",", 1)[1], validate=True)
+                        image = read_image(raw)
+                    except Exception:
+                        continue
+
+                    raw_detections = plant.get("detections", [])
+                    cleaned = []
+                    for d in raw_detections:
+                        if isinstance(d, dict) and d.get("class_name") in CLASS_NAMES:
+                            cleaned.append({
+                                "class_name": d["class_name"],
+                                "confidence": float(d.get("confidence", 0)),
+                                "xyxy": [float(c) for c in d.get("xyxy", [0, 0, 10, 10])],
+                                "manual": False
+                            })
+
+                    finding_id = uuid.uuid4().hex
+                    image_name = finding_id + ".jpg"
+                    image_path = IMAGE_DIR / image_name
+                    image.save(image_path, "JPEG", quality=88)
+
+                    status = "confirmado" if cleaned else "pendiente"
+                    obs = f"Inspección 3D / Planta #{plant.get('id', saved_count + 1)}"
+                    con.execute(
+                        "INSERT INTO hallazgos (id,created_at,sector,lat,lon,observations,detections_json,image_name,status,reviewed_at,model_name,owner_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+                        (finding_id, now_str, sector, None, None, obs, json.dumps(cleaned), image_name, status,
+                         now_str if status == "confirmado" else None, MODEL_PATH.name, user["id"])
+                    )
+                    saved_count += 1
+        except Exception:
+            app.logger.exception("Error al guardar lote de hallazgos")
+            return jsonify(error="Ocurrió un error al guardar el lote en el historial."), 500
+
+        return jsonify(saved_count=saved_count, message=f"Se guardaron {saved_count} inspecciones en tu historial."), 201
 
     @app.post("/api/classify")
     def classify():

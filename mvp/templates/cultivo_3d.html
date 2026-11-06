@@ -1,8 +1,251 @@
 {% extends "base_account.html" %}
-{% block title %}Cultivo 3D · AgriTech{% endblock %}
+{% block title %}Mapa y Cultivo 3D · AgriTech{% endblock %}
 {% block content %}
-<section class="account-heading"><div><p class="eyebrow">SIMULACIÓN VISUAL / ESPÁRRAGO</p><h1>Explora una parcela en 3D</h1><p>Gira el cultivo y ajusta el escenario para explicar dónde revisar brotes y tallos. Los puntos de color son una representación ilustrativa, no una localización medida ni un diagnóstico automático.</p></div><a class="account-secondary" href="/esparrago">Ir a inspección YOLO ↗</a></section>
-<div class="scene-layout"><section class="scene-frame"><canvas id="cultivoCanvas" width="1000" height="620" role="img" aria-label="Simulación interactiva en perspectiva de tres camas de espárrago con marcadores de inspección"></canvas><div class="scene-legend"><span><i class="legend-green"></i> Brotes</span><span><i class="legend-amber"></i> Punto de revisión</span></div></section>
-<aside class="account-card scene-controls"><p class="eyebrow">CONTROLES</p><h2>Construye el escenario</h2><label>Etapa del cultivo <select id="stage"><option value="brote">Brote</option><option value="desarrollo" selected>Desarrollo</option><option value="maduro">Maduro</option></select></label><label>Presión ilustrativa de plagas <input type="range" id="pressure" min="0" max="6" value="2"><output id="pressureValue">2 puntos</output></label><label>Giro de la vista <input type="range" id="rotation" min="-65" max="65" value="-25"><output id="rotationValue">-25°</output></label><button type="button" class="account-secondary" id="resetScene">Restablecer vista</button><div id="sceneData" class="scene-data" role="status">Escenario ilustrativo.</div><p class="muted small">Puedes arrastrar sobre la escena para girarla. Esta vista no representa coordenadas reales del lote ni sustituye la visita de campo.</p></aside></div>
+<input type="hidden" id="csrfToken" value="{{ csrf_token() }}">
+
+<section class="account-heading">
+  <div>
+    <p class="eyebrow">DIAGNÓSTICO FITOSANITARIO · MAPA 3D</p>
+    <h1>Inspección de Cultivo en 3D</h1>
+    <p>
+      Carga un reporte en PDF con fotografías de tu lote para que el modelo YOLO analice cada planta.
+      Explora la parcela en 3D, haz clic en cualquier planta para ver su fotografía original con los recuadros
+      de plagas detectadas y conmuta entre la vista de campo y la cuadrícula de parcelas.
+    </p>
+  </div>
+  <a class="account-secondary" href="/esparrago">Ir a inspección individual YOLO ↗</a>
+</section>
+
+<!-- Panel de carga y análisis de PDF -->
+<section class="account-card pdf-uploader-card">
+  <form id="formAnalizarPdf" class="pdf-uploader-form">
+    <div class="uploader-inputs">
+      <label for="pdfInput" class="upload-label">
+        <span class="upload-icon">📄</span>
+        <span class="upload-text"><strong>Selecciona o arrastra el reporte PDF</strong> (fotos digitales del cultivo)</span>
+        <input type="file" id="pdfInput" accept=".pdf" required>
+      </label>
+      <div class="uploader-options">
+        <label>
+          Sensibilidad YOLO
+          <select id="confSelect">
+            <option value="0.20">0.20 (Sensibilidad alta / detecta más)</option>
+            <option value="0.30" selected>0.30 (Equilibrado recomendado)</option>
+            <option value="0.45">0.45 (Mayor precisión / menos falsos positivos)</option>
+            <option value="0.60">0.60 (Alta certeza)</option>
+          </select>
+        </label>
+        <button type="submit" id="btnAnalizarPdf" class="account-primary">
+          <span class="btn-text">🔍 Analizar Reporte PDF</span>
+        </button>
+      </div>
+    </div>
+  </form>
+
+  <div id="analysisProgress" class="analysis-progress" role="status" hidden>
+    <div class="spinner"></div>
+    <span id="progressText">Extrayendo fotografías y ejecutando inferencia con YOLOv8...</span>
+  </div>
+
+  <div id="analysisError" class="analysis-error" role="alert" hidden></div>
+
+  <!-- Barra de estadísticas post-análisis -->
+  <div id="statsRibbon" class="stats-ribbon" hidden>
+    <div class="stat-badge total">
+      <span class="stat-num" id="statTotal">0</span>
+      <span class="stat-desc">Plantas analizadas</span>
+    </div>
+    <div class="stat-badge healthy">
+      <span class="stat-num" id="statHealthy">0</span>
+      <span class="stat-desc">Plantas sanas</span>
+    </div>
+    <div class="stat-badge alert">
+      <span class="stat-num" id="statInfested">0</span>
+      <span class="stat-desc">Focos con plaga</span>
+    </div>
+    <div class="stat-summary-text">
+      <strong>Resumen de especies:</strong>
+      <span id="statPestsList">Ninguna</span>
+    </div>
+    <div class="stats-actions">
+      <button type="button" id="btnGuardarLote" class="account-secondary">
+        💾 Guardar lote en mi historial
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- Barra de herramientas de vista 3D -->
+<div class="view-toolbar">
+  <div class="mode-switch-group">
+    <span class="toolbar-label">Visualización:</span>
+    <button type="button" id="btnModeCamas" class="mode-btn active" title="Perspectiva de camas de espárrago en campo">
+      🌱 Camas de Espárrago
+    </button>
+    <button type="button" id="btnModeGrid" class="mode-btn" title="Cuadrícula analítica de parcelas según el reporte">
+      ▦ Cuadrícula de Parcelas
+    </button>
+  </div>
+  <span class="canvas-help-hint">💡 Haz clic en cualquier planta para ver su foto real y recuadros de plagas. Arrastra para girar.</span>
+</div>
+
+<!-- Layout del visor 3D y controles -->
+<div class="scene-layout">
+  <section class="scene-frame">
+    <canvas id="cultivoCanvas" width="1000" height="620" role="img" aria-label="Escena 3D interactiva del cultivo de espárrago"></canvas>
+    <div class="scene-legend">
+      <span><i class="legend-green"></i> Planta sana / Brote</span>
+      <span><i class="legend-red"></i> Foco con plaga (YOLO)</span>
+      <span><i class="legend-selected"></i> Seleccionada</span>
+    </div>
+  </section>
+
+  <aside class="account-card scene-controls">
+    <p class="eyebrow">PARÁMETROS 3D</p>
+    <h2>Controles del visor</h2>
+    
+    <label>
+      Giro de la vista
+      <input type="range" id="rotation" min="-65" max="65" value="-25">
+      <output id="rotationValue">-25°</output>
+    </label>
+
+    <label id="stageControlLabel">
+      Etapa del cultivo (modo ilustrativo)
+      <select id="stage">
+        <option value="brote">Brote</option>
+        <option value="desarrollo" selected>Desarrollo</option>
+        <option value="maduro">Maduro</option>
+      </select>
+    </label>
+
+    <label id="pressureControlLabel">
+      Presión ilustrativa
+      <input type="range" id="pressure" min="0" max="6" value="2">
+      <output id="pressureValue">2 puntos</output>
+    </label>
+
+    <div class="controls-buttons">
+      <button type="button" class="account-secondary" id="resetScene">Restablecer ángulo</button>
+      <button type="button" class="account-secondary" id="btnModoIlustrativo" style="display:none;">Volver a simulación ejemplo</button>
+    </div>
+
+    <div id="sceneData" class="scene-data" role="status">
+      Carga un reporte PDF para ver el diagnóstico real de tus plantas.
+    </div>
+
+    <div id="selectedPlantQuickview" class="selected-plant-quickview" hidden>
+      <p class="eyebrow">PLANTA SELECCIONADA</p>
+      <h3 id="quickviewTitle">Planta #1</h3>
+      <p id="quickviewStatus" class="status-pill">Estado</p>
+      <button type="button" id="btnOpenModal" class="account-primary btn-sm">Ver foto y recuadros ↗</button>
+    </div>
+  </aside>
+</div>
+
+<!-- Modal de inspección detallada de la planta -->
+<div id="plantModal" class="plant-modal-backdrop" role="dialog" aria-modal="true" hidden>
+  <div class="plant-modal-container">
+    <header class="modal-header">
+      <div>
+        <span class="eyebrow" id="modalPlantEyebrow">PLANTA #1</span>
+        <h2 id="modalPlantTitle">Inspección Fitosanitaria</h2>
+      </div>
+      <button type="button" id="btnCloseModal" class="modal-close" aria-label="Cerrar">&times;</button>
+    </header>
+
+    <div class="modal-body">
+      <div class="modal-image-wrapper">
+        <canvas id="plantDetailCanvas" width="640" height="640"></canvas>
+      </div>
+
+      <div class="modal-details">
+        <div class="modal-status-card" id="modalStatusCard">
+          <h3 id="modalStatusHeading">Diagnóstico</h3>
+          <p id="modalStatusDescription"></p>
+        </div>
+
+        <h3>Detecciones de YOLOv8</h3>
+        <div id="modalDetectionsContainer" class="detections-container">
+          <!-- Lista dinámica de detecciones -->
+        </div>
+
+        <div class="modal-footer-actions">
+          <a id="modalSigiaLink" class="account-secondary btn-sm" href="/senasa" target="_blank" rel="noopener">
+            Consultar productos en SENASA / SIGIA ↗
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.pdf-uploader-card { margin-bottom: 16px; border: 1px solid #c4dbc9; background: #fbfdfa; }
+.uploader-inputs { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; }
+.upload-label { flex: 1; min-width: 260px; display: flex; align-items: center; gap: 12px; padding: 14px 18px; border: 2px dashed #97be9e; border-radius: 10px; background: white; cursor: pointer; transition: border-color .2s; }
+.upload-label:hover { border-color: #3b7e4f; }
+.upload-label input { display: none; }
+.upload-icon { font-size: 1.8rem; }
+.upload-text { font-size: .88rem; color: #2d5c45; }
+.uploader-options { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
+.uploader-options label { font-size: .78rem; font-weight: 700; color: #2d5c45; display: flex; flex-direction: column; gap: 5px; }
+.uploader-options select { padding: 9px 12px; border: 1px solid #bdcfc0; border-radius: 8px; font-size: .84rem; background: white; }
+.analysis-progress { display: flex; align-items: center; gap: 12px; margin-top: 14px; padding: 12px 16px; border-radius: 8px; background: #eaf4ed; color: #225936; font-size: .86rem; font-weight: 600; }
+.spinner { width: 18px; height: 18px; border: 3px solid #b7dcbf; border-top-color: #27673c; border-radius: 50%; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.analysis-error { margin-top: 14px; padding: 12px 16px; border-radius: 8px; background: #fbeae8; border: 1px solid #f2b4ab; color: #9c281b; font-size: .85rem; font-weight: 600; }
+
+.stats-ribbon { margin-top: 16px; padding: 14px 18px; border-radius: 10px; background: #f3f9f3; border: 1px solid #c9e0cf; display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.stat-badge { padding: 8px 14px; border-radius: 8px; background: white; border: 1px solid #d1e2d5; text-align: center; }
+.stat-badge.healthy { border-color: #7ec48c; background: #eef8f0; color: #1c6b32; }
+.stat-badge.alert { border-color: #f2aa9d; background: #fdf1ef; color: #a12818; }
+.stat-num { display: block; font-size: 1.4rem; font-weight: 800; line-height: 1; }
+.stat-desc { font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); }
+.stat-summary-text { font-size: .84rem; color: #2c513b; flex: 1; min-width: 200px; }
+.stats-actions { margin-left: auto; }
+
+.view-toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
+.mode-switch-group { display: inline-flex; align-items: center; gap: 6px; background: #eaf1eb; padding: 4px; border-radius: 9px; }
+.toolbar-label { font-size: .8rem; font-weight: 700; color: #355844; margin-left: 6px; margin-right: 4px; }
+.mode-btn { border: none; background: transparent; padding: 7px 14px; border-radius: 7px; font-size: .82rem; font-weight: 700; color: #436952; cursor: pointer; transition: all .15s; }
+.mode-btn.active { background: white; color: #19482b; box-shadow: 0 2px 6px rgba(0,0,0,.08); }
+.canvas-help-hint { font-size: .8rem; color: #486a55; }
+
+.legend-selected { background: #3b82f6 !important; box-shadow: 0 0 6px #60a5fa; }
+.legend-red { background: #e54b3c !important; }
+
+.selected-plant-quickview { margin-top: 14px; padding: 14px; border-radius: 10px; background: #f0f7f1; border: 1px solid #badac0; }
+.selected-plant-quickview h3 { margin: 4px 0 8px; font-size: 1.05rem; color: #1e4e31; }
+.status-pill { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: .76rem; font-weight: 700; margin-bottom: 10px; }
+.status-pill.alerta { background: #fed7d7; color: #9b2c2c; }
+.status-pill.limpio { background: #c6f6d5; color: #22543d; }
+.btn-sm { padding: 8px 14px; font-size: .8rem; border-radius: 6px; }
+
+/* Modal de detalle */
+.plant-modal-backdrop { position: fixed; inset: 0; background: rgba(18, 38, 25, 0.72); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 16px; }
+.plant-modal-backdrop[hidden] { display: none !important; }
+.plant-modal-container { background: white; border-radius: 16px; max-width: 900px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 40px rgba(0,0,0,.3); display: flex; flex-direction: column; }
+.modal-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 18px 24px; border-bottom: 1px solid #e2ede4; background: #f8faf8; border-radius: 16px 16px 0 0; }
+.modal-header h2 { margin: 2px 0 0; font-size: 1.25rem; color: #1e482f; }
+.modal-close { background: none; border: none; font-size: 1.8rem; line-height: 1; cursor: pointer; color: #5a7b66; border-radius: 6px; padding: 2px 8px; }
+.modal-close:hover { background: #eaf1eb; color: #1e482f; }
+.modal-body { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 20px; padding: 20px; }
+@media (max-width: 780px) { .modal-body { grid-template-columns: 1fr; } }
+.modal-image-wrapper { background: #16241b; border-radius: 10px; overflow: hidden; display: flex; align-items: center; justify-content: center; min-height: 320px; }
+.modal-image-wrapper canvas { max-width: 100%; height: auto; display: block; }
+.modal-details { display: flex; flex-direction: column; gap: 14px; }
+.modal-status-card { padding: 12px 16px; border-radius: 8px; font-size: .86rem; }
+.modal-status-card.alerta { background: #fff5f5; border: 1px solid #fed7d7; color: #742a2a; }
+.modal-status-card.limpio { background: #f0fff4; border: 1px solid #c6f6d5; color: #22543d; }
+.modal-status-card h3 { margin: 0 0 4px; font-size: .95rem; }
+.detections-container { display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; }
+.detection-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-radius: 6px; background: #f4f8f5; border: 1px solid #d7e8db; font-size: .82rem; }
+.detection-name { font-weight: 700; color: #224d32; }
+.detection-conf { font-weight: 600; color: #097241; font-size: .78rem; }
+.modal-footer-actions { margin-top: auto; padding-top: 10px; }
+</style>
 {% endblock %}
-{% block scripts %}<script src="{{ url_for('static', filename='cultivo_3d.js', v='20261027') }}" defer></script>{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='cultivo_3d.js', v='20261106') }}" defer></script>
+{% endblock %}

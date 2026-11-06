@@ -8,7 +8,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT.parent / "esparragos-mvp-produccion.tar.gz"
 FILES = [
-    "app.py", "accounts.py", "general_classifier.py", "senasa.py", "requirements.txt",
+    "app.py", "accounts.py", "general_classifier.py", "pdf_processor.py", "senasa.py", "requirements.txt",
     "models/classes_ip102.txt",
     "models/esparragos_yolov8n_v2.pt",
     "models/esparragos_yolo26n_semisupervisado.pt",

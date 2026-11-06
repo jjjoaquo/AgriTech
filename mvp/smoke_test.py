@@ -112,6 +112,19 @@ def main() -> None:
         assert other.get("/api/dataset/export").status_code == 403
         assert client.get("/api/cultivo/resumen").json["inspections"] == 1
         assert other.get("/api/cultivo/resumen").json["inspections"] == 0
+
+        # Validar nuevo endpoint de análisis de reporte PDF para mapa 3D
+        sample_img = Image.new("RGB", (80, 80), color="green")
+        pdf_buf = io.BytesIO()
+        sample_img.save(pdf_buf, format="PDF")
+        analisis_pdf = client.post(
+            "/api/cultivo/analizar-pdf",
+            headers={"X-CSRF-Token": csrf},
+            data={"reporte": (io.BytesIO(pdf_buf.getvalue()), "reporte_muestra.pdf"), "confidence": "0.30"}
+        )
+        assert analisis_pdf.status_code == 200, (analisis_pdf.status_code, analisis_pdf.data)
+        assert analisis_pdf.json["total_plants"] == 1
+        assert "plants" in analisis_pdf.json
         assert client.get("/api/dataset/export").status_code == 403
 
         for _ in range(9):

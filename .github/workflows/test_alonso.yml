@@ -57,19 +57,25 @@ jobs:
           echo "=== Ejecutando suite unitaria específica para las HUs de Alonso ==="
           python -m unittest discover -s tests -p 'test_alonso_hu.py' -v 2>&1 | tee test-results/pruebas-unitarias-alonso.txt
 
-      - name: 7. Suite general de pruebas unitarias
+      - name: 7. Pruebas unitarias de Análisis PDF y Mapa 3D (SCRUM-88 Extendido)
+        run: |
+          set -o pipefail
+          echo "=== Ejecutando pruebas unitarias de procesamiento de PDF y visualización 3D ==="
+          python -m unittest discover -s tests -p 'test_cultivo_pdf.py' -v 2>&1 | tee test-results/pruebas-cultivo-pdf.txt
+
+      - name: 8. Suite general de pruebas unitarias
         run: |
           set -o pipefail
           echo "=== Ejecutando todas las pruebas unitarias ==="
           python -m unittest discover -s tests -p 'test_*.py' -v 2>&1 | tee test-results/pruebas-unitarias-todas.txt
 
-      - name: 8. Pruebas de integración y flujo funcional (Smoke Test)
+      - name: 9. Pruebas de integración y flujo funcional (Smoke Test)
         run: |
           set -o pipefail
           echo "=== Validando flujo completo end-to-end (SCRUM-86 parcelas, SCRUM-88 3D, exportación SCRUM-81) ==="
           python smoke_test.py 2>&1 | tee test-results/pruebas-integracion.txt
 
-      - name: 9. Empaquetado de la aplicación para producción (Packaging)
+      - name: 10. Empaquetado de la aplicación para producción (Packaging)
         run: |
           echo "=== Preparando empaquetado de producción ==="
           mkdir -p models
@@ -79,7 +85,7 @@ jobs:
           python deploy/build_bundle.py
           ls -lh ../esparragos-mvp-produccion.tar.gz
 
-      - name: 10. Conservar evidencias y artefacto empaquetado
+      - name: 11. Conservar evidencias y artefacto empaquetado
         if: always()
         uses: actions/upload-artifact@v4
         with:
