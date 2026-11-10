@@ -115,6 +115,14 @@ class Accounts:
             # Previene clickjacking: la aplicación no debe incrustarse en iframes externos.
             response.headers.setdefault("X-Frame-Options", "DENY")
             response.headers.setdefault("Content-Security-Policy", "frame-ancestors 'none'")
+            # Limitar el acceso a recursos de fotos privadas desde sitios externos.
+            if request.path.startswith("/api/hallazgos/") and request.path.endswith("/imagen"):
+                response.headers.setdefault("Cross-Origin-Resource-Policy", "same-origin")
+            # Mantener cámara y geolocalización propias, deshabilitar APIs no usadas.
+            response.headers.setdefault(
+                "Permissions-Policy",
+                "camera=(self), geolocation=(self), microphone=(), payment=(), usb=()",
+            )
             # HSTS solo en producción: nunca imponer HTTPS en el entorno local de pruebas.
             if os.environ.get("AGRI_ENV") == "production":
                 response.headers.setdefault("Strict-Transport-Security", "max-age=31536000")
