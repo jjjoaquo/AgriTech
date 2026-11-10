@@ -9,6 +9,7 @@
 **/*.zip
 **/*.tar.gz
 mvp/data/
+mvp/test-results/
 mvp/runs/
 mvp/training_data/**/images/
 mvp/training_data/**/labels/
