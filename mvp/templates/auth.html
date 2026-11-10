@@ -1,7 +1,7 @@
 {% extends "base_account.html" %}
 {% block title %}{% if mode == 'registro' %}Crear cuenta{% elif mode == 'activar' %}Activar superadmin{% else %}Iniciar sesión{% endif %} · AgriTech{% endblock %}
 {% block content %}
-<section class="account-card auth-card">
+<div class="auth-layout"><aside class="auth-visual"><div><p class="eyebrow">AGRITECH · CAMPO CONECTADO</p><h2>Conoce mejor cada imagen de tu cultivo.</h2><p>Una cuenta reúne inspecciones, hallazgos y decisiones verificadas en campo.</p></div><span>INSPECCIÓN VISUAL · ESPÁRRAGO</span></aside><section class="account-card auth-card">
   <p class="eyebrow">CUENTAS AGRITECH</p>
   {% if mode == 'registro' %}
     <h1>Crea tu espacio de inspección.</h1>
@@ -34,5 +34,5 @@
     </form>
     <p class="auth-switch">¿Primera vez? <a href="/registro">Crea una cuenta gratuita</a>.</p>
   {% endif %}
-</section>
+</section></div>
 {% endblock %}

@@ -9,8 +9,9 @@
   <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
   <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='accounts.css', v='20261027') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='visual-2026.css', v='1') }}">
 </head>
-<body>
+<body class="tool-page yolo-page">
   <a class="skip-link" href="#inspeccion">Saltar a la inspección</a>
   <header class="topbar">
     <a class="brand" href="/" aria-label="AgriTech, módulos">
@@ -30,7 +31,7 @@
     <a href="/cultivo-3d">Cultivo 3D</a><a href="/planes">Planes</a>
   </nav>
   <main id="inicio">
-    <section class="intro" aria-labelledby="pageTitle">
+    <section class="intro tool-intro" aria-labelledby="pageTitle">
       <div>
         <p class="eyebrow">ESPÁRRAGO · INSPECCIÓN FITOSANITARIA</p>
         <h1 id="pageTitle">Una mirada más precisa <br>para cuidar tu cultivo.</h1>

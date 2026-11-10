@@ -9,6 +9,7 @@
   <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
   <link rel="stylesheet" href="{{ url_for('static', filename='app.css', v='20261027-accounts') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='accounts.css', v='20261027') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='visual-2026.css', v='1') }}">
 </head>
 <body class="account-page">
   <a class="skip-link" href="#contenido">Saltar al contenido</a>
@@ -21,10 +22,10 @@
     </div>
   </header>
   <nav class="top-nav" aria-label="Navegación principal">
-    <a href="/">Inicio</a><a href="/general">Clasificación</a><a href="/esparrago">YOLO</a>
-    {% if agri_user %}<a href="/dashboard">Dashboard</a>{% endif %}
-    <a href="/cultivo-3d">Cultivo 3D</a><a href="/planes">Planes</a>
-    {% if agri_user and agri_user.role == 'superadmin' %}<a href="/admin">Superadmin</a>{% endif %}
+    <a href="/"{% if request.path == '/' %} aria-current="page"{% endif %}>Inicio</a><a href="/general"{% if request.path == '/general' %} aria-current="page"{% endif %}>Clasificación</a><a href="/esparrago"{% if request.path == '/esparrago' %} aria-current="page"{% endif %}>YOLO</a>
+    {% if agri_user %}<a href="/dashboard"{% if request.path == '/dashboard' %} aria-current="page"{% endif %}>Dashboard</a>{% endif %}
+    <a href="/cultivo-3d"{% if request.path == '/cultivo-3d' %} aria-current="page"{% endif %}>Cultivo 3D</a><a href="/planes"{% if request.path == '/planes' %} aria-current="page"{% endif %}>Planes</a>
+    {% if agri_user and agri_user.role == 'superadmin' %}<a href="/admin"{% if request.path == '/admin' %} aria-current="page"{% endif %}>Superadmin</a>{% endif %}
   </nav>
   <main id="contenido" class="account-main">
     {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}

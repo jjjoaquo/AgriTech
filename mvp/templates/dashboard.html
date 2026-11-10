@@ -1,7 +1,7 @@
 {% extends "base_account.html" %}
 {% block title %}Mi dashboard · AgriTech{% endblock %}
 {% block content %}
-<section class="account-heading"><div><p class="eyebrow">MI CULTIVO / DATOS PRIVADOS</p><h1>Tu dashboard de inspección</h1><p>Resumen de los hallazgos que registraste con tu cuenta. Las predicciones requieren verificación en campo.</p></div><a class="account-primary" href="/esparrago">Nueva inspección ↗</a></section>
+<section class="account-heading visual-heading farmer-heading"><div><p class="eyebrow">MI CULTIVO / DATOS PRIVADOS</p><h1>Tu dashboard de inspección</h1><p>Resumen de los hallazgos que registraste con tu cuenta. Las predicciones requieren verificación en campo.</p></div><a class="account-primary" href="/esparrago">Nueva inspección ↗</a></section>
 <section class="stat-grid" aria-label="Indicadores de inspección">
   <article class="stat-card"><span>Hallazgos guardados</span><strong>{{ total }}</strong><small>Solo los de tu cuenta</small></article>
   <article class="stat-card"><span>Confirmados</span><strong>{{ statuses.get('confirmado', 0) }}</strong><small>Tras revisión humana</small></article>

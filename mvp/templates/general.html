@@ -8,8 +8,9 @@
   <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
   <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='accounts.css', v='20261027') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='visual-2026.css', v='1') }}">
 </head>
-<body>
+<body class="tool-page general-page">
   <a class="skip-link" href="#analisis">Saltar al análisis</a>
   <header class="topbar">
     <a class="brand" href="/" aria-label="AgriTech, inicio"><span class="brand-icon" aria-hidden="true">✳</span><span><strong>AgriTech</strong><small>PLAGAS EN CULTIVOS</small></span></a>
@@ -17,7 +18,7 @@
   </header>
   <nav class="top-nav" aria-label="Módulos"><a href="/">Inicio</a><a href="/general" aria-current="page">Clasificación general</a><a href="/esparrago">YOLO · Espárrago</a><a href="/cultivo-3d">Cultivo 3D</a><a href="/planes">Planes</a></nav>
   <main>
-    <section class="intro" aria-labelledby="general-title">
+    <section class="intro tool-intro" aria-labelledby="general-title">
       <div>
         <p class="eyebrow">VARIOS CULTIVOS · 102 CLASES</p>
         <h1 id="general-title">Una foto, posibles <br>clases de plaga.</h1>

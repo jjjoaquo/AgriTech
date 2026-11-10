@@ -1,0 +1,69 @@
+/* AgriTech visual layer: photographic context, clear role hierarchy, and restrained motion. */
+:root{--forest:#102c25;--green:#13734d;--green-hover:#0c593a;--lime:#d8e69c;--muted:#587168;--line:#dce7dc;--surface:#fffefa;--soft:#f3f6ef;--shadow:0 14px 42px #153a2b12}
+body{background:#f5f7f1;color:#173b30}
+.topbar{min-height:74px;background:#102c25}
+.brand-icon{background:#dfeab1;border-radius:50%;font-size:26px;transform:rotate(-16deg)}
+.top-nav{box-shadow:0 10px 26px #153a2b0a;background:#fffefaeb;backdrop-filter:blur(14px)}
+.top-nav a{position:relative;transition:color .2s ease,background-color .2s ease,transform .2s ease}
+.top-nav a:hover{transform:translateY(-2px)}
+.top-nav a[aria-current="page"],.top-nav a[aria-current="location"]{background:#e7f1dc;color:#1b573b}
+.top-login,.logout-btn{transition:background-color .2s ease,transform .2s ease}
+.top-login:hover,.logout-btn:hover{transform:translateY(-2px)}
+.eyebrow{letter-spacing:.16em}
+.portal-page main{max-width:1500px;padding-top:22px}
+.portal-hero{display:flex;align-items:center;min-height:620px;padding:clamp(32px,7vw,100px);border-radius:24px;background:#132c23 url('media/campo-poster.webp') center/cover;color:white;box-shadow:0 28px 70px #092f2440}
+.portal-hero::before{z-index:1;background:linear-gradient(90deg,#071d19e8 0%,#082b24a8 42%,#123b2514 100%),linear-gradient(0deg,#071e15aa,transparent 45%)}
+.hero-motion{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+.portal-hero-copy{position:relative;z-index:2;max-width:800px;animation:rise-in .7s ease both}
+.portal-hero .eyebrow{color:#d8e9ac;font-size:.72rem}
+.portal-hero h1{font-size:clamp(3.2rem,6vw,6.5rem);line-height:1.01;max-width:850px;letter-spacing:-.07em;text-wrap:balance}
+.portal-hero h1 em{color:#e2efb6}
+.portal-hero-copy>p:not(.eyebrow){max-width:530px;font-size:1.08rem;color:#e0e9df}
+.hero-actions{display:flex;align-items:center;gap:26px;flex-wrap:wrap;margin-top:30px}
+.portal-hero-link{margin:0;background:#dce9aa;color:#173527;padding:15px 24px;border:0;border-radius:999px;transition:transform .24s ease,background-color .24s ease,box-shadow .24s ease}
+.portal-hero-link:hover{color:#102e21;background:#f2f6d2;transform:translateY(-3px);box-shadow:0 14px 24px #071a1480}
+.hero-quiet-link{color:white;text-decoration:none;font-weight:700;border-bottom:1px solid #d9edbc88;padding-bottom:4px;transition:color .2s ease}
+.hero-quiet-link:hover{color:#e2efb6}
+.hero-field-note{position:absolute;z-index:2;right:38px;bottom:36px;display:flex;gap:12px;align-items:center;padding:15px 18px;border:1px solid #ffffff5c;border-radius:15px;background:#10271fc9;backdrop-filter:blur(12px)}
+.hero-field-note strong,.hero-field-note small{display:block}.hero-field-note small{color:#c8d5c8;font-size:.74rem;margin-top:3px}.hero-note-icon{font-size:2.2rem;color:#e1eab6}
+.trust-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin:17px 0 44px;background:#e9eee4;border:1px solid #dce6d8;border-radius:14px;overflow:hidden}
+.trust-strip span{padding:16px 18px;font-size:.75rem;color:#5b7162;letter-spacing:.04em}.trust-strip span+span{border-left:1px solid #d0ddcf}.trust-strip strong{color:#234f3d}
+.portal-section-heading{margin-top:60px;margin-bottom:22px}.portal-section-heading h2{font-size:clamp(2rem,3.1vw,3.1rem)}
+.module-card{overflow:hidden;gap:17px;padding:36px;border-radius:20px;transition:transform .3s ease,box-shadow .3s ease,border-color .3s ease}
+.module-card:hover{transform:translateY(-6px);box-shadow:0 24px 50px #1c4c2b21;border-color:#acc9a8}
+.module-card h2{font-size:clamp(1.7rem,2.3vw,2.25rem)}
+.module-photo{position:relative;overflow:hidden;width:100%;height:230px;margin-top:auto;background-color:#dce9d9;background-position:center;background-size:cover;border-radius:13px;isolation:isolate}
+.module-photo::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,#071e17aa,transparent 55%);z-index:-1}
+.module-photo-general{background-image:url('media/inspeccion-campo.webp')}.module-photo-yolo{background-image:url('media/campo-esparragos.webp')}
+.module-photo span{position:absolute;bottom:17px;left:19px;color:white;font-size:.68rem;font-weight:800;letter-spacing:.16em}
+.module-photo-yolo i{position:absolute;top:24%;right:28%;height:48%;width:26%;border:2px solid #e1efad;border-radius:7px;box-shadow:0 0 0 999px #12392310;transform:rotate(-3deg)}
+.module-action,.account-primary,.account-secondary,.primary,.secondary,.file-btn{transition:transform .24s ease,box-shadow .24s ease,background-color .24s ease,border-color .24s ease}
+.module-action:hover,.account-primary:hover,.account-secondary:hover,.primary:hover,.secondary:hover,.file-btn:hover{transform:translateY(-2px);box-shadow:0 12px 22px #123d2c20}
+.portal-process{margin:42px 0 20px;background:#eaf0e3;border-radius:14px;border:1px solid #d8e3d4}.portal-process>div{padding:25px}.portal-process span{font-size:1.1rem}
+.field-story{display:grid;grid-template-columns:.85fr 1.15fr;align-items:center;gap:clamp(28px,5vw,80px);margin:85px 0 70px;padding:clamp(28px,5vw,72px);border-radius:22px;background:#17382c;color:white;overflow:hidden}
+.field-story h2{font-size:clamp(2.2rem,4vw,4.5rem);letter-spacing:-.06em;line-height:1.05;max-width:540px}
+.field-story p:not(.eyebrow){margin-top:18px;max-width:500px;line-height:1.7;color:#d5e4d6}.field-story .small{font-size:.75rem;color:#aec9b5!important}.field-story .eyebrow{color:#d8e9ac}.field-story .account-primary{margin-top:26px;background:#dce9aa;color:#163b2b;border-color:#dce9aa}
+.field-story-media{position:relative;min-width:0}.field-story-media video{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:14px;box-shadow:0 25px 55px #051e1799;background:#0e251e}.field-story-media>span{position:absolute;top:16px;left:16px;background:#102c25dc;border:1px solid #ffffff55;border-radius:999px;padding:7px 11px;font-size:.7rem;letter-spacing:.12em}
+.plan-card{transition:transform .28s ease,box-shadow .28s ease}.plan-card:hover{transform:translateY(-6px);box-shadow:0 22px 48px #163f2a1f}.plan-card.featured{background:#183f32;color:white;border-color:#183f32}.plan-card.featured h2,.plan-card.featured .plan-price{color:white!important}.plan-card.featured>p:not(.eyebrow),.plan-card.featured li{color:#d8e6dc}.plan-card.featured .eyebrow{color:#dceba8}.plan-card.featured .account-primary{background:#dce9aa;color:#183c2a;border-color:#dce9aa}
+.account-main{max-width:1376px}.account-card,.card{background:#fffefa;border-radius:18px;box-shadow:var(--shadow)}
+.visual-heading{position:relative;isolation:isolate;min-height:250px;align-items:end;overflow:hidden;padding:44px 48px;border-radius:20px;background:#14392d center/cover;color:white;box-shadow:0 20px 48px #10382b25}
+.visual-heading::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#0b271fe9,#113a2d9c 55%,#103b2520)}
+.visual-heading h1{color:white;font-size:clamp(2.4rem,4.1vw,4.3rem);line-height:1.05}.visual-heading .eyebrow{color:#d9eab1}.visual-heading p:not(.eyebrow){color:#e0e9dc;max-width:640px}.visual-heading>a{position:relative;z-index:1;white-space:nowrap}.visual-heading .account-primary{background:#dce9aa;border-color:#dce9aa;color:#173b2a}.visual-heading .account-secondary{background:#ffffffed;color:#153f2b}
+.farmer-heading,.map-heading{background-image:url('media/campo-esparragos.webp')}.plans-heading{background-image:url('media/inspeccion-campo.webp')}.admin-heading{background-image:url('media/campo-esparragos.webp')}.admin-heading::before{background:linear-gradient(90deg,#0a2220f2,#0c3934c4 65%,#0c393499)}
+.heading-marker{align-self:flex-start;padding:8px 11px;border:1px solid #ffffff88;border-radius:999px;color:#e5eddb;white-space:nowrap;font-size:.67rem;font-weight:800;letter-spacing:.12em}
+.stat-grid{margin-top:23px;gap:16px}.stat-card{min-height:165px;background:#fffefa;border:1px solid #dce7dc;border-left:4px solid #8eb774;padding:22px;transition:transform .24s ease,box-shadow .24s ease}.stat-card:hover{transform:translateY(-3px);box-shadow:0 16px 28px #173d2915}.stat-card strong{font-size:2.4rem}
+.dashboard-grid{gap:17px}.insight-list li strong{color:#176c48}.dashboard-trend .trend-bar{background:linear-gradient(180deg,#b6d38b,#176c48)}
+.auth-layout{display:grid;grid-template-columns:1fr 1fr;min-height:640px;max-width:1120px;margin:16px auto 60px;border-radius:22px;overflow:hidden;box-shadow:0 24px 60px #0b302323}
+.auth-visual{position:relative;isolation:isolate;display:flex;flex-direction:column;justify-content:space-between;min-height:600px;padding:42px;background:#163d2c url('media/inspeccion-campo.webp') center/cover;color:white}
+.auth-visual::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(0deg,#0b2a20eb,#123f2d30 75%)}
+.auth-visual>div{margin-top:auto}.auth-visual .eyebrow{color:#e3f0bb}.auth-visual h2{font-size:clamp(2.5rem,4vw,4rem);line-height:1.05;letter-spacing:-.06em;max-width:450px}.auth-visual p:not(.eyebrow){max-width:390px;margin-top:17px;color:#e6eee0}.auth-visual>span{margin-top:30px;font-size:.68rem;font-weight:800;letter-spacing:.16em;color:#d8e8c7}
+.auth-card{width:100%;max-width:none;margin:0;padding:clamp(30px,4vw,60px);border:0;border-radius:0;box-shadow:none;align-self:center}.auth-card h1{font-size:clamp(2.3rem,3.2vw,3.5rem)}
+.account-form input,.account-form select,.account-form textarea,.scene-controls select{min-height:46px;border-radius:10px;transition:border-color .2s ease,box-shadow .2s ease}.account-form input:focus,.account-form select:focus,.account-form textarea:focus{border-color:#379064;box-shadow:0 0 0 3px #8fcfa650;outline:0}
+.tool-intro{position:relative;isolation:isolate;min-height:300px;padding:38px 40px;border-radius:20px;background:#173f2c url('media/campo-esparragos.webp') center/cover;color:white;box-shadow:0 16px 42px #123b2c22;overflow:hidden}
+.tool-intro::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#0b261fea,#11372eaa 60%,#0a2e2577)}
+.general-page .tool-intro{background-image:url('media/inspeccion-campo.webp')}.tool-intro h1{color:white;font-size:clamp(2.4rem,4vw,4.1rem)}.tool-intro .eyebrow{color:#d9ecb5}.tool-intro>div>p:last-child{color:#e3eee3;max-width:570px}.tool-intro .steps{background:#0e2b23b8;border-color:#ffffff4d;backdrop-filter:blur(8px)}.tool-intro .steps strong{color:white}.tool-intro .steps small{color:#d3e7d3}.tool-intro .step-number{color:#e0eebb;border-color:#a4bc98}
+.pdf-uploader-card{box-shadow:0 16px 36px #193f2b12}.scene-frame{box-shadow:0 16px 38px #0c3c251b}
+@keyframes rise-in{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:1050px){.portal-hero{min-height:540px}.trust-strip{grid-template-columns:repeat(2,1fr)}.trust-strip span:nth-child(3){border-left:0;border-top:1px solid #d0ddcf}.trust-strip span:nth-child(4){border-top:1px solid #d0ddcf}.field-story{grid-template-columns:1fr}.tool-intro{display:block}.tool-intro .steps{margin-top:22px;max-width:660px}.visual-heading{display:block}.visual-heading>a{margin-top:20px}.heading-marker{display:inline-block;margin-top:18px}}
+@media(max-width:700px){.portal-page main{padding-inline:14px}.portal-hero{min-height:550px;padding:34px 26px;border-radius:16px;align-items:end}.portal-hero h1{font-size:clamp(2.8rem,11vw,4.2rem)}.portal-hero-copy>p:not(.eyebrow){font-size:.95rem}.hero-field-note{display:none}.hero-actions{gap:18px}.trust-strip{grid-template-columns:1fr;margin-bottom:25px}.trust-strip span+span,.trust-strip span:nth-child(3),.trust-strip span:nth-child(4){border-left:0;border-top:1px solid #d0ddcf}.module-card{padding:24px}.module-photo{height:170px}.field-story{margin:50px 0;padding:28px}.auth-layout{grid-template-columns:1fr;margin:10px auto 40px}.auth-visual{min-height:250px;padding:26px}.auth-visual h2{font-size:2.3rem}.auth-visual>span{margin-top:20px}.auth-card{padding:32px 26px}.visual-heading{padding:30px 24px;min-height:270px}.tool-intro{padding:28px 24px;min-height:0}.tool-intro .steps{display:grid;gap:8px}.tool-intro .steps li{min-width:0}.tool-intro h1{font-size:2.5rem}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.hero-motion{display:none}.portal-hero-copy{animation:none}.module-card,.plan-card,.stat-card,.top-nav a,.portal-hero-link,.module-action,.account-primary,.account-secondary,.primary,.secondary,.file-btn{transition:none}.module-card:hover,.plan-card:hover,.stat-card:hover,.top-nav a:hover,.portal-hero-link:hover,.module-action:hover,.account-primary:hover,.account-secondary:hover,.primary:hover,.secondary:hover,.file-btn:hover{transform:none}}

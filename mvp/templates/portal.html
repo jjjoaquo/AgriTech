@@ -8,6 +8,7 @@
   <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
   <link rel="stylesheet" href="{{ url_for('static', filename='app.css', v='20261026-portal') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='accounts.css', v='20261027') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='visual-2026.css', v='1') }}">
 </head>
 <body class="portal-page">
   <a class="skip-link" href="#modulos">Saltar a los módulos</a>
@@ -24,18 +25,18 @@
   </nav>
   <main id="inicio">
     <section class="portal-hero" aria-labelledby="portal-title">
+      <video class="hero-motion" autoplay muted loop playsinline preload="metadata" poster="{{ url_for('static', filename='media/campo-poster.webp') }}" aria-hidden="true"><source src="{{ url_for('static', filename='media/campo-en-movimiento.mp4') }}" type="video/mp4"></video>
       <div class="portal-hero-copy">
-        <p class="eyebrow">AGRITECH / INSPECCIÓN FITOSANITARIA</p>
+        <p class="eyebrow">TECNOLOGÍA VISUAL PARA EL CAMPO · MVP ACADÉMICO</p>
         <h1 id="portal-title">Observa el cultivo.<br><em>Decide con evidencia.</em></h1>
         <p>Dos herramientas para revisar fotografías de plagas. Empieza con una imagen, examina el resultado y confirma el hallazgo en campo.</p>
-        <a class="portal-hero-link" href="#modulos">Elegir herramienta <span aria-hidden="true">↘</span></a>
+        <div class="hero-actions"><a class="portal-hero-link" href="#modulos">Explorar herramientas <span aria-hidden="true">↗</span></a><a class="hero-quiet-link" href="/cultivo-3d">Ver cultivo 3D <span aria-hidden="true">→</span></a></div>
       </div>
-      <div class="portal-hero-visual" aria-hidden="true">
-        <span class="hero-visual-tag">FLUJO DE INSPECCIÓN</span>
-        <span class="hero-visual-frame"><span class="hero-visual-focus"></span></span>
-        <span class="hero-visual-caption">FOTO <span>→</span> ANÁLISIS <span>→</span> REVISIÓN</span>
+      <div class="hero-field-note" aria-hidden="true">
+        <span class="hero-note-icon">◎</span><span><strong>Del campo a la evidencia</strong><small>Captura · analiza · confirma</small></span>
       </div>
     </section>
+    <div class="trust-strip" aria-label="Capacidades del prototipo"><span>01 <strong>102 clases</strong> · fotografía</span><span>02 <strong>YOLO</strong> · recuadros en espárrago</span><span>03 <strong>3D</strong> · recorrido del lote</span><span>04 <strong>SIGIA–SENASA</strong> · consulta</span></div>
     <div class="portal-section-heading"><div><p class="eyebrow">01 / HERRAMIENTAS</p><h2>¿Qué necesitas analizar?</h2></div><p>Selecciona el módulo según la imagen que tengas.</p></div>
     <section id="modulos" class="portal-grid" aria-label="Módulos disponibles">
       <article class="module-card module-general">
@@ -43,7 +44,7 @@
         <span class="eyebrow">VARIOS CULTIVOS · CLASIFICACIÓN</span>
         <h2>Clasificación general de plagas</h2>
         <p>Sube una foto cercana de la plaga. ResNet‑152 muestra tres posibles clases entre 102 categorías para la imagen completa.</p>
-        <div class="module-illustration general-illustration" aria-hidden="true"><span>FOTOGRAFÍA</span><div class="illustration-picture">✳</div><div class="illustration-lines"><i></i><i></i><i></i></div></div>
+        <div class="module-photo module-photo-general" role="img" aria-label="Inspección visual de espárrago en campo"><span>FOTOGRAFÍA DEL CULTIVO</span></div>
         <div class="module-meta"><span>Foto</span><span>102 clases</span><span>Sin recuadros</span></div>
         <a class="module-action" href="/general">Abrir clasificación general <span aria-hidden="true">↗</span></a>
         {% if not classifier_available %}<p class="small muted">El peso ResNet aún no está instalado en este servidor.</p>{% endif %}
@@ -53,12 +54,16 @@
         <span class="eyebrow">ESPÁRRAGO · DETECCIÓN LOCALIZADA</span>
         <h2>Inspección localizada con YOLO</h2>
         <p>Analiza una foto o la cámara, ve cajas y datos sobre la imagen, corrige resultados, registra hallazgos y consulta SIGIA–SENASA para espárrago.</p>
-        <div class="module-illustration yolo-illustration" aria-hidden="true"><span>VISTA DE DETECCIÓN</span><div class="illustration-picture">✳<i></i></div><div class="illustration-lines"><i></i><i></i></div></div>
+        <div class="module-photo module-photo-yolo" role="img" aria-label="Cultivo de espárrago y área ilustrativa de detección"><span>INSPECCIÓN LOCALIZADA</span><i aria-hidden="true"></i></div>
         <div class="module-meta"><span>Foto o cámara</span><span>7 clases</span><span>Recuadros</span></div>
         <a class="module-action" href="/esparrago">Abrir inspección con YOLO <span aria-hidden="true">↗</span></a>
       </article>
     </section>
     <div class="portal-process" aria-label="Pasos de inspección"><div><span>01</span><strong>Captura</strong><small>Sube una foto o usa la cámara en YOLO.</small></div><div><span>02</span><strong>Revisa</strong><small>Lee la clase sugerida o los recuadros.</small></div><div><span>03</span><strong>Confirma</strong><small>Verifica el resultado en campo.</small></div></div>
+    <section class="field-story" aria-labelledby="field-story-title">
+      <div class="field-story-copy"><p class="eyebrow">03 / EXPLORA EL LOTE</p><h2 id="field-story-title">El cultivo cobra otra dimensión.</h2><p>Recorre una representación 3D del espárrago, alterna la vista del campo y la cuadrícula, y revisa las fotografías vinculadas a cada planta cuando cargues un reporte.</p><p class="small">El video muestra una demostración ilustrativa de la interfaz; no representa un diagnóstico de campo.</p><a class="account-primary" href="/cultivo-3d">Abrir mapa 3D <span aria-hidden="true">↗</span></a></div>
+      <div class="field-story-media"><video controls preload="none" playsinline poster="{{ url_for('static', filename='media/campo-poster.webp') }}" aria-label="Demostración ilustrativa del mapa 3D de AgriTech"><source src="{{ url_for('static', filename='media/demostracion-cultivo-3d.mp4') }}" type="video/mp4">Tu navegador no puede reproducir este video.</video><span>DEMO · 22 S</span></div>
+    </section>
     <section class="landing-plan-section" id="planes" aria-labelledby="planes-title">
       <div class="portal-section-heading"><div><p class="eyebrow">02 / PLANES</p><h2 id="planes-title">Del primer análisis a una campaña completa</h2></div><p>La cuota cuenta hallazgos guardados, no fotogramas de cámara.</p></div>
       <div class="plans-grid">
@@ -71,5 +76,6 @@
     <p class="portal-note"><strong>Alcance actual.</strong> {% if classifier_variant == 'balanced' %}El clasificador general usa un peso reentrenado con IP102 balanceado y entrada de 256 × 256 px.{% else %}El clasificador general usa el peso no balanceado entregado por Alonso y entrada de 256 × 256 px. El ZIP balanceado aún no está publicado como modelo en este sitio.{% endif %} YOLO realiza la detección localizada en espárrago. SENASA es una fuente de consulta, no una validación automática del modelo.</p>
   </main>
   <footer><strong>AgriTech</strong><span>Prototipo académico · La revisión humana decide.</span><a href="#modulos">Volver a los módulos ↑</a></footer>
+  <script src="{{ url_for('static', filename='visual-2026.js', v='1') }}" defer></script>
 </body>
 </html>
