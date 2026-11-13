@@ -4,6 +4,15 @@
 
 El pipeline valida cada cambio enviado a `main` y cada pull request hacia esa rama. Relaciona el commit con una historia `SCRUM-n`, comprueba la calidad técnica y las funciones del MVP, y conserva evidencia descargable. La verificación del sitio publicado se ejecuta manualmente **después** del despliegue, para no confundir una compilación exitosa con una versión efectivamente instalada.
 
+Además del CI general, hay dos workflows por dominio que se activan cuando cambian sus archivos o de forma manual:
+
+| Workflow | Historias vinculadas | Prueba concreta |
+|---|---|---|
+| [Historias de visión](../../.github/workflows/historias_vision_michelle.yml) | SCRUM-10, 11, 12, 13 | Formato de carga, recuadro YOLO simulado, ausencia de hallazgos y nombres para SIGIA. Cuatro trabajos paralelos y una puerta final. |
+| [Cuentas y planes](../../.github/workflows/cuentas_planes_michelle.yml) | SCRUM-84, 90 | Registro, sesión, permisos, cuotas y aislamiento. Dos trabajos paralelos y una puerta final. |
+
+Los tests de seguridad invocados en el workflow de cuentas fueron escritos por Favio; ejecutarlos aquí comprueba una integración de Michelle, pero no cambia su autoría. Los commits de Michelle para SCRUM-10 a SCRUM-13, SCRUM-84 y SCRUM-90 ya existen en el historial y conservan su fecha original. Estos workflows nuevos aportan **evidencia actual de regresión**; no crean ejecuciones retrospectivas en la fecha de esos commits.
+
 ## Flujo de siete etapas
 
 ```mermaid

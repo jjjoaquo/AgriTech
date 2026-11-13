@@ -1,0 +1,81 @@
+name: AgriTech | Michelle | Cuentas y planes
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/cuentas_planes_michelle.yml'
+      - 'mvp/accounts.py'
+      - 'mvp/app.py'
+      - 'mvp/templates/auth.html'
+      - 'mvp/templates/plans.html'
+      - 'mvp/smoke_test.py'
+      - 'mvp/tests/test_favio_security.py'
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/cuentas_planes_michelle.yml'
+      - 'mvp/accounts.py'
+      - 'mvp/app.py'
+      - 'mvp/templates/auth.html'
+      - 'mvp/templates/plans.html'
+      - 'mvp/smoke_test.py'
+      - 'mvp/tests/test_favio_security.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  registro:
+    name: SCRUM-84 | Registro, sesión y roles
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    defaults:
+      run:
+        working-directory: mvp
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install 'Flask>=3,<4' 'Pillow>=10' 'pypdf>=4' 'PyYAML>=6'
+      - name: Probar autenticación con suite compartida de seguridad
+        run: python -m unittest discover -s tests -p 'test_favio_security.py' -v
+
+  planes:
+    name: SCRUM-90 | Cuotas y aislamiento por plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    defaults:
+      run:
+        working-directory: mvp
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install 'Flask>=3,<4' 'Pillow>=10' 'pypdf>=4' 'PyYAML>=6'
+      - name: Probar flujo funcional de cuotas y planes
+        run: python smoke_test.py
+
+  aprobacion:
+    name: Puerta | Cuentas y planes
+    needs: [registro, planes]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Exigir ambos resultados
+        env:
+          REGISTRO: ${{ needs.registro.result }}
+          PLANES: ${{ needs.planes.result }}
+        run: |
+          {
+            echo '## Cuentas y planes de Michelle'
+            echo '| Historia | Resultado |'
+            echo '|---|---|'
+            echo "| SCRUM-84 | $REGISTRO |"
+            echo "| SCRUM-90 | $PLANES |"
+          } >> "$GITHUB_STEP_SUMMARY"
+          test "$REGISTRO" = success
+          test "$PLANES" = success
