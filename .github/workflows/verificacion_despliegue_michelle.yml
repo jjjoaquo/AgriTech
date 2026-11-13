@@ -1,0 +1,36 @@
+name: AgriTech | Michelle | Verificación del sitio
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  sitio-publico:
+    name: 01 | HTTPS y páginas públicas
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Comprobar sitio sin credenciales
+        run: python mvp/ci/check_deployed_site.py --base-url https://esparragos.comextech.es
+      - name: Evidencia
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: michelle-sitio-publicado
+          path: mvp/test-results/sitio-publicado.json
+          if-no-files-found: warn
+  resultado:
+    name: 02 | Disponibilidad publicada
+    needs: sitio-publico
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resumir sin confundir verificación con despliegue
+        env:
+          STATUS: ${{ needs.sitio-publico.result }}
+        run: |
+          echo "Verificación del sitio: $STATUS" >> "$GITHUB_STEP_SUMMARY"
+          test "$STATUS" = success

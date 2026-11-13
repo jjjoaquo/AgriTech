@@ -1,82 +1,186 @@
-name: Pruebas AgriTech - Michelle
-
+name: AgriTech | Michelle | CI del MVP
 on:
   push:
     branches: [main]
   pull_request:
+    branches: [main]
   workflow_dispatch:
-
 permissions:
   contents: read
-
 concurrency:
-  group: pruebas-michelle-${{ github.ref }}
+  group: michelle-ci-${{ github.ref }}
   cancel-in-progress: true
-
 jobs:
   trazabilidad:
-    name: Evidencia de commit y Jira
+    name: 01 | Jira y commit
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Descargar código e historial inmediato
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 2
       - name: Registrar SHA, autor, fecha e historia
         run: python mvp/ci/traceability_report.py
-      - name: Conservar evidencia de trazabilidad
+      - name: Evidencia
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: trazabilidad-michelle
+          name: michelle-01-trazabilidad
           path: mvp/test-results/trazabilidad-github.*
           if-no-files-found: warn
-
-  pruebas:
-    name: Pruebas funcionales y UX visual
+  calidad:
+    name: 02 | Sintaxis y tamaño
+    needs: trazabilidad
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Sintaxis Python y JavaScript
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m compileall -q mvp
+          for file in mvp/static/*.js; do node --check "$file"; done
+      - name: Controlar archivos grandes
+        run: python mvp/ci/check_repository_size.py
+      - name: Evidencia
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: michelle-02-calidad
+          path: mvp/test-results/tamano-repositorio.json
+          if-no-files-found: warn
+  unitarias:
+    name: 03 | Imagen y detección
+    needs: calidad
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
     defaults:
       run:
         working-directory: mvp
     steps:
-      - name: Descargar codigo
-        uses: actions/checkout@v4
-      - name: Preparar Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Preparar Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-      - name: Instalar dependencias de pruebas
-        run: python -m pip install 'Flask>=3.0,<4' 'Pillow>=10' 'pypdf>=4'
-      - name: Validar sintaxis de JavaScript de la interfaz
+      - run: python -m pip install 'Flask>=3,<4' 'Pillow>=10' 'pypdf>=4' 'PyYAML>=6'
+      - name: Probar carga, clases, ausencia de plaga y cajas YOLO
+        shell: bash
         run: |
-          node --check static/app.js
-          node --check static/general.js
-          node --check static/cultivo_3d.js
-          node --check static/visual-2026.js
-      - name: Pruebas unitarias de todas las historias implementadas
-        run: |
+          set -euo pipefail
           mkdir -p test-results
-          set -o pipefail
-          python -m unittest discover -s tests -v 2>&1 | tee test-results/unitarias.txt
-      - name: Recorrido público y recursos visuales SCRUM-91
-        run: |
-          set -o pipefail
-          python -m unittest discover -s tests -p 'test_visual_experience.py' -v 2>&1 | tee test-results/ux-visual.txt
-      - name: Integración funcional de rutas y permisos
-        run: |
-          mkdir -p test-results
-          set -o pipefail
-          python smoke_test.py 2>&1 | tee test-results/funcionales.txt
-      - name: Conservar resultados
+          for test in test_upload.py test_class_mapping.py test_no_detection.py test_yolo_detection.py; do
+            python -m unittest discover -s tests -p "$test" -v 2>&1 | tee -a test-results/unitarias-michelle.txt
+          done
+      - name: Evidencia
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: resultados-pruebas-michelle
-          path: mvp/test-results/
+          name: michelle-03-unitarias
+          path: mvp/test-results/unitarias-michelle.txt
           if-no-files-found: warn
+  experiencia:
+    name: 04 | UX y recursos visuales
+    needs: calidad
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    defaults:
+      run:
+        working-directory: mvp
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: python -m pip install 'Flask>=3,<4' 'Pillow>=10' 'pypdf>=4' 'PyYAML>=6' 'Jinja2>=3,<4'
+      - name: Probar páginas y medios visuales
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p test-results
+          python -m unittest discover -s tests -p 'test_visual_experience.py' -v 2>&1 | tee test-results/experiencia-visual.txt
+          python -m unittest discover -s tests -p 'test_ux_jira.py' -v 2>&1 | tee test-results/criterios-ux.txt
+      - name: Evidencia
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: michelle-04-experiencia
+          path: |
+            mvp/test-results/experiencia-visual.txt
+            mvp/test-results/criterios-ux.txt
+          if-no-files-found: warn
+  integracion:
+    name: 05 | Flujo funcional Flask
+    needs: [unitarias, experiencia]
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    defaults:
+      run:
+        working-directory: mvp
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install 'Flask>=3,<4' 'Pillow>=10' 'pypdf>=4' 'PyYAML>=6'
+      - name: Probar clasificación, detección simulada y sesiones
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p test-results
+          python smoke_test.py 2>&1 | tee test-results/integracion-michelle.txt
+      - name: Evidencia
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: michelle-05-integracion
+          path: mvp/test-results/integracion-michelle.txt
+          if-no-files-found: warn
+  paquete:
+    name: 06 | Paquete visual y SHA256
+    needs: integracion
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preparar interfaz sin pesos ni datos personales
+        run: python mvp/ci/build_frontend_artifact.py
+      - name: Evidencia
+        uses: actions/upload-artifact@v4
+        with:
+          name: michelle-06-paquete-visual
+          path: |
+            mvp/test-results/interfaz-agritech.zip
+            mvp/test-results/interfaz-agritech-manifest.json
+          if-no-files-found: error
+  aprobacion:
+    name: 07 | Puerta de aprobación
+    needs: [trazabilidad, calidad, unitarias, experiencia, integracion, paquete]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Exigir éxito de todas las etapas
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          python - <<'PY'
+          import json, os, sys
+          results = json.loads(os.environ['RESULTS'])
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as out:
+              out.write('## Validación del MVP de Michelle\n\n| Etapa | Resultado |\n|---|---|\n')
+              for job, info in results.items():
+                  out.write(f"| {job} | {info['result']} |\n")
+          failed = [job for job, info in results.items() if info['result'] != 'success']
+          if failed:
+              sys.exit('Etapas sin aprobar: ' + ', '.join(failed))
+          PY

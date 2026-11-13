@@ -1,17 +1,55 @@
-# Pipeline de Michelle: trazabilidad y experiencia visual
+# Pipeline CI de Michelle Montoya Rocca
 
-El workflow [Pruebas AgriTech - Michelle](../../.github/workflows/tests_michelle.yml) se ejecuta en `main`, en pull requests y manualmente. Sus dos trabajos independientes permiten distinguir la evidencia del commit de la validación del producto.
+## Objetivo
 
-## Evidencia de GitHub y Jira
+El pipeline valida cada cambio enviado a `main` y cada pull request hacia esa rama. Relaciona el commit con una historia `SCRUM-n`, comprueba la calidad técnica y las funciones del MVP, y conserva evidencia descargable. La verificación del sitio publicado se ejecuta manualmente **después** del despliegue, para no confundir una compilación exitosa con una versión efectivamente instalada.
 
-El trabajo **Evidencia de commit y Jira** guarda el SHA, autor, fecha ISO y título del commit en `trazabilidad-github.json` y `trazabilidad-github.md`. Exige un identificador `SCRUM-n` en los commits directos; un merge commit conserva la relación a través de su PR. El resultado aparece también en el resumen de GitHub Actions. Este trabajo no modifica Jira ni asigna fechas de finalización en nombre de una persona.
+## Flujo de siete etapas
 
-## Validación funcional y visual
+```mermaid
+flowchart LR
+    A[01 Jira y commit] --> B[02 Sintaxis y tamaño]
+    B --> C[03 Imagen y detección]
+    B --> D[04 UX y recursos visuales]
+    C --> E[05 Flujo funcional Flask]
+    D --> E
+    E --> F[06 Paquete visual y SHA256]
+    A --> G[07 Puerta de aprobación]
+    B --> G
+    C --> G
+    D --> G
+    E --> G
+    F --> G
+```
 
-El trabajo **Pruebas funcionales y UX visual** comprueba sintaxis JavaScript, ejecuta la suite unitaria, verifica las rutas públicas y los recursos visuales, y ejecuta el smoke test de integración. Conserva los resultados como artefacto descargable. La prueba visual abre las páginas desde Flask y comprueba que el video y las imágenes se sirven; las capturas de navegador del pipeline de Favio complementan esta evidencia.
+| Etapa | Qué comprueba | Evidencia en GitHub Actions |
+|---|---|---|
+| 01 Jira y commit | SHA, autor, fecha y clave Jira del commit. Los commits directos deben incluir `SCRUM-n`. | `michelle-01-trazabilidad` |
+| 02 Sintaxis y tamaño | Compilación Python, sintaxis de todos los JavaScript y ausencia de archivos rastreados mayores de 25 MiB. | `michelle-02-calidad` |
+| 03 Imagen y detección | Carga JPEG, validación de imagen, correspondencia YOLO–SIGIA, respuesta sin plaga y recuadros con confianza. | `michelle-03-unitarias` |
+| 04 UX y recursos visuales | Rutas públicas, medios servidos, etiquetas accesibles y criterios de historias de UX. | `michelle-04-experiencia` |
+| 05 Flujo funcional Flask | Registro, sesiones, clasificación y detección simuladas, permisos, planes y exportación privada. | `michelle-05-integracion` |
+| 06 Paquete visual y SHA256 | Empaquetado de plantillas y recursos estáticos, con hashes verificados. No incluye pesos ni datos de usuarios. | `michelle-06-paquete-visual` |
+| 07 Puerta de aprobación | Rechaza el run si cualquiera de las etapas anteriores falla o se omite. | Tabla en el resumen del run |
 
-## Relación con el burndown de Jira
+La [verificación del sitio](../../.github/workflows/verificacion_despliegue_michelle.yml) es otro workflow, activado manualmente tras publicar. Prueba HTTPS y seis páginas públicas, genera `sitio-publicado.json` y no requiere contraseñas. Sus dos trabajos separan la comprobación del resultado final. No despliega código ni afirma que el sitio corresponda al SHA del run.
 
-La línea base del burndown es el trabajo comprometido al iniciar el sprint. Jira dibuja el avance a partir de cambios reales de estado y de alcance. Un commit o una prueba exitosa **no mueve por sí solo** la curva: la historia debe estar en el sprint correcto y pasar a `Done` tras la revisión, con una fecha coherente. Si las historias se cerraron después del intervalo planificado, no se deben alterar retrospectivamente las fechas para forzar una curva ideal. En Sprint Review se registra la diferencia entre línea base, alcance añadido y trabajo realmente terminado.
+## Alcance y límites de la evidencia
 
-Para la sustentación individual, descargar los artefactos del run correspondiente y cotejar el identificador `SCRUM-n`, el SHA y la fecha con la historia en Jira y su reporte de burndown.
+El repositorio no distribuye los pesos de YOLO ni ResNet. En CI, el smoke test usa respuestas simuladas para verificar el contrato HTTP y el flujo de la aplicación; **no mide precisión del modelo**. La seguridad avanzada y la prueba de navegador real pertenecen al [pipeline compartido de Favio](../../.github/workflows/favio-ci-seguridad.yml), que se ejecuta por separado. El empaquetado visual es un artefacto de revisión, no un instalador de producción.
+
+Para presentar una contribución individual se muestra el run de GitHub Actions, la tabla de la puerta de aprobación y los artefactos. El archivo de trazabilidad permite cotejar la clave `SCRUM-n`, el SHA y la fecha con la historia de Jira. El pipeline no modifica estados ni fechas de Jira.
+
+## Ejecución local
+
+Desde la raíz del repositorio:
+
+```text
+python mvp/ci/check_repository_size.py
+python mvp/ci/build_frontend_artifact.py
+python -m unittest discover -s mvp/tests -p test_visual_experience.py -v
+python mvp/smoke_test.py
+python mvp/ci/check_deployed_site.py --base-url https://esparragos.comextech.es
+```
+
+Para el burndown, el avance se registra en Jira con las transiciones y fechas reales. El Sprint Review debe explicar cambios de alcance y trabajo terminado fuera del intervalo planificado; no se alteran fechas retrospectivamente para ajustar la curva.
